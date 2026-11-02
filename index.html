@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>P:E Einkaufsplaner</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Wochen-Einkaufsplaner mit Protein:Energie-Verhältnis, Makro- und Mikronährstoff-Auswertung.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --olive:#646559; --olive-d:#4b4c42; --olive-m:#9b9c90; --olive-l:#c7c6b3;
+  --sand:#ebe7e3; --paper:#f8f8f7; --white:#fff;
+  --ink:#2f3029; --ink-m:#6b6c62; --line:#ded9d3;
+  --red:#b5563f; --amber:#d9a441; --green:#6f9c4a; --green-d:#577d39;
+  --r:6px; --shadow:0 1px 3px rgba(47,48,41,.08),0 6px 18px rgba(47,48,41,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:'Open Sans',system-ui,sans-serif; color:var(--ink);
+  background:var(--paper); font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:'Poppins',system-ui,sans-serif; margin:0; color:var(--olive); font-weight:600}
+button{font:inherit; cursor:pointer}
+input,select{font:inherit; color:inherit}
+
+/* ---------- Kopf ---------- */
+.top{background:var(--olive); color:#fff; padding:18px 0 20px}
+.wrap{max-width:1320px; margin:0 auto; padding:0 20px}
+.top h1{color:#fff; font-size:23px; letter-spacing:-.01em}
+.top p{margin:4px 0 0; color:#dcdcd4; font-size:14px; max-width:70ch}
+.brand{display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+.brand .logo{
+  font-family:'Poppins',sans-serif; font-weight:700; font-size:13px; letter-spacing:.22em;
+  border:2px solid #fff; padding:3px 9px; border-radius:3px; white-space:nowrap;
+}
+
+/* ---------- Grundraster ---------- */
+.grid{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:22px; padding:22px 0 60px}
+@media(max-width:1020px){ .grid{grid-template-columns:minmax(0,1fr)} }
+.card{background:var(--white); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); margin-bottom:18px}
+.card>h2{
+  font-size:15px; padding:13px 16px; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+}
+.card>h2 .sub{font-family:'Open Sans',sans-serif; font-weight:400; font-size:12.5px; color:var(--ink-m)}
+.pad{padding:16px}
+.rightcol{position:sticky; top:14px; align-self:start}
+@media(max-width:1020px){ .rightcol{position:static} }
+
+/* ---------- Suche & Filter ---------- */
+.search{position:relative}
+.search input{
+  width:100%; padding:10px 12px 10px 34px; border:1px solid var(--line);
+  border-radius:var(--r); background:var(--paper);
+}
+.search input:focus{outline:2px solid var(--olive-m); outline-offset:-1px; background:#fff}
+.search svg{position:absolute; left:11px; top:11px; width:15px; height:15px; fill:var(--olive-m)}
+.chips{display:flex; flex-wrap:wrap; gap:6px; margin-top:11px}
+.chip{
+  border:1px solid var(--line); background:var(--paper); color:var(--ink-m);
+  border-radius:999px; padding:4px 11px; font-size:12.5px; transition:.12s;
+}
+.chip:hover{border-color:var(--olive-m); color:var(--olive)}
+.chip[aria-pressed="true"]{background:var(--olive); border-color:var(--olive); color:#fff}
+
+/* ---------- Lebensmittelliste ---------- */
+.list{max-height:430px; overflow-y:auto; border-top:1px solid var(--line); margin-top:14px}
+.row{
+  display:grid; grid-template-columns:1fr auto auto; gap:12px; align-items:center;
+  padding:9px 4px 9px 2px; border-bottom:1px solid var(--line); cursor:pointer;
+}
+.row:hover{background:var(--sand)}
+.row .nm{font-size:13.5px; line-height:1.35; min-width:0}
+.row .nm small{display:block; color:var(--ink-m); font-size:11.5px}
+.row .kc{font-size:12px; color:var(--ink-m); white-space:nowrap; text-align:right}
+.pe{
+  font-family:'Poppins',sans-serif; font-weight:600; font-size:12px; color:#fff;
+  border-radius:999px; padding:2px 8px; min-width:46px; text-align:center; white-space:nowrap;
+}
+.add{
+  border:none; background:var(--olive); color:#fff; border-radius:var(--r);
+  width:28px; height:28px; font-size:17px; line-height:1; display:grid; place-items:center;
+}
+.add:hover{background:var(--olive-d)}
+.empty{padding:26px 6px; text-align:center; color:var(--ink-m); font-size:13.5px}
+
+/* ---------- Warenkorb ---------- */
+.b-row{display:grid; grid-template-columns:1fr auto auto auto; gap:9px; align-items:center;
+  padding:8px 0; border-bottom:1px solid var(--line)}
+.b-row .nm{font-size:13.5px; min-width:0}
+.b-row .nm small{display:block; color:var(--ink-m); font-size:11.5px}
+.qty{display:flex; align-items:center; gap:0; border:1px solid var(--line); border-radius:var(--r); overflow:hidden}
+.qty button{border:none; background:var(--paper); color:var(--olive); width:26px; height:30px; font-size:15px; line-height:1}
+.qty button:hover{background:var(--sand)}
+.qty input{width:62px; border:none; text-align:right; padding:5px 4px; background:#fff; font-size:13.5px}
+.qty input:focus{outline:none; background:var(--sand)}
+.qty .u{padding:0 7px 0 2px; font-size:12px; color:var(--ink-m); background:#fff; height:30px; line-height:30px}
+.del{border:none; background:none; color:var(--olive-m); font-size:17px; line-height:1; padding:2px 5px}
+.del:hover{color:var(--red)}
+.b-pe{font-size:11.5px; color:var(--ink-m); white-space:nowrap; text-align:right; min-width:52px}
+
+/* ---------- Einstellungen ---------- */
+.setts{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+.fld{display:flex; flex-direction:column; gap:4px}
+.fld label{font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-m); font-weight:600}
+.seg{display:flex; border:1px solid var(--line); border-radius:var(--r); overflow:hidden}
+.seg button{border:none; background:#fff; padding:6px 11px; font-size:13.5px; color:var(--ink-m); border-right:1px solid var(--line)}
+.seg button:last-child{border-right:none}
+.seg button[aria-pressed="true"]{background:var(--olive); color:#fff}
+.seg button:not([aria-pressed="true"]):hover{background:var(--sand)}
+
+/* ---------- Gauge ---------- */
+.gaugebox{display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:14px; align-items:center}
+@media(max-width:560px){ .gaugebox{grid-template-columns:minmax(0,1fr)} }
+.gauge svg{width:100%; height:auto; display:block}
+#needle{transition:transform .55s cubic-bezier(.22,.9,.3,1)}
+.bigpe{text-align:center; padding:4px 0}
+.bigpe .v{font-family:'Poppins',sans-serif; font-weight:700; font-size:44px; line-height:1; color:var(--olive)}
+.bigpe .l{font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-m); margin-top:5px}
+.bigpe .zone{display:inline-block; margin-top:9px; padding:3px 11px; border-radius:999px; color:#fff;
+  font-size:12.5px; font-family:'Poppins',sans-serif; font-weight:600}
+.bigpe .ang{font-size:12px; color:var(--ink-m); margin-top:7px}
+
+/* ---------- Kennzahlen ---------- */
+.kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(118px,1fr)); gap:10px}
+.kpi{background:var(--paper); border:1px solid var(--line); border-radius:var(--r); padding:11px 12px}
+.kpi .v{font-family:'Poppins',sans-serif; font-weight:600; font-size:21px; color:var(--olive); line-height:1.15}
+.kpi .v span{font-size:12.5px; font-weight:500; color:var(--ink-m)}
+.kpi .l{font-size:11.5px; color:var(--ink-m); margin-top:3px}
+
+/* ---------- Makro-Balken ---------- */
+.macro{margin-top:4px}
+.macro .m{display:grid; grid-template-columns:132px 1fr auto; gap:11px; align-items:center; padding:6px 0}
+.macro .m .nm{font-size:13px}
+.macro .m .nm b{display:block; font-weight:600; font-family:'Poppins',sans-serif; font-size:13px}
+.macro .m .nm small{color:var(--ink-m); font-size:11.5px}
+.bar{height:9px; background:var(--sand); border-radius:999px; overflow:hidden}
+.bar i{display:block; height:100%; border-radius:999px; transition:width .4s ease}
+.macro .pct{font-size:12.5px; color:var(--ink-m); min-width:42px; text-align:right}
+
+/* Balken mit hinterlegtem Zielbereich */
+.tbar{position:relative; height:14px; background:var(--sand); border-radius:999px; overflow:hidden}
+.tbar .band{position:absolute; top:0; bottom:0; background:rgba(111,156,74,.32)}
+.tbar .band::before,.tbar .band::after{content:''; position:absolute; top:0; bottom:0; width:1px; background:rgba(87,125,57,.7)}
+.tbar .band::before{left:0}
+.tbar .band::after{right:0}
+.tbar i{position:absolute; top:4px; height:6px; left:0; border-radius:999px; transition:width .4s ease}
+.goal{font-size:11.5px; color:var(--ink-m); white-space:nowrap; text-align:right; min-width:96px}
+.goal b{display:block; font-size:12.5px; font-weight:600; font-family:'Poppins',sans-serif}
+.st-ok b{color:var(--green-d)}
+.st-lo b{color:var(--amber)}
+.st-hi b{color:var(--red)}
+
+/* ---------- Leistungsprofil ---------- */
+.numin{display:flex; align-items:center; border:1px solid var(--line); border-radius:var(--r); overflow:hidden; background:#fff}
+.numin input{width:58px; border:none; padding:6px 3px 6px 9px; text-align:right; font-size:14px}
+.numin input:focus{outline:none; background:var(--sand)}
+.numin span{padding:0 9px 0 3px; font-size:12.5px; color:var(--ink-m)}
+select.sel{border:1px solid var(--line); border-radius:var(--r); padding:6px 9px; background:#fff; font-size:13.5px; max-width:260px}
+select.sel:focus{outline:2px solid var(--olive-m); outline-offset:-1px}
+.profnote{font-size:12.5px; color:var(--ink-m); margin-top:12px; padding:10px 13px;
+  background:var(--paper); border-left:3px solid var(--olive-l); border-radius:0 var(--r) var(--r) 0}
+.profnote b{color:var(--olive)}
+.profnote .src{display:block; margin-top:5px; font-size:11px; color:var(--olive-m)}
+
+/* ---------- Mikronährstoffe ---------- */
+.micros{display:grid; grid-template-columns:repeat(auto-fit,minmax(248px,1fr)); gap:3px 22px}
+.mi{display:grid; grid-template-columns:1fr; gap:3px; padding:7px 0; border-bottom:1px solid var(--line)}
+.mi .hd{display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:12.5px}
+.mi .hd b{font-weight:600; font-size:13px}
+.mi .hd .q{color:var(--ink-m); font-size:11.5px; white-space:nowrap}
+.mbar{position:relative; height:9px; background:var(--sand); border-radius:999px; overflow:hidden}
+.mbar i{display:block; height:100%; border-radius:999px; transition:width .4s ease}
+.mbar .minmark{position:absolute; top:0; bottom:0; width:2px; background:var(--olive-d); z-index:2; cursor:help}
+.info{display:inline-block; width:13px; height:13px; line-height:13px; text-align:center;
+  border-radius:50%; background:var(--olive-l); color:var(--olive-d); font-size:9.5px;
+  font-weight:700; font-style:normal; cursor:help; vertical-align:1px}
+.warn{color:var(--amber); cursor:help; font-weight:700}
+.legend{display:flex; gap:16px; flex-wrap:wrap; font-size:11.5px; color:var(--ink-m); margin-top:12px}
+.legend span{display:inline-flex; align-items:center; gap:5px}
+.sw{width:11px; height:11px; border-radius:3px; display:inline-block}
+
+/* ---------- Diverses ---------- */
+.btn{border:1px solid var(--olive); background:var(--olive); color:#fff; padding:8px 14px; border-radius:var(--r); font-size:13.5px}
+.btn:hover{background:var(--olive-d); border-color:var(--olive-d)}
+.btn.ghost{background:#fff; color:var(--olive)}
+.btn.ghost:hover{background:var(--sand)}
+.btnrow{display:flex; gap:8px; flex-wrap:wrap}
+details.help{border-top:1px solid var(--line); padding:12px 16px; font-size:13px; color:var(--ink-m)}
+details.help summary{cursor:pointer; color:var(--olive); font-weight:600; font-size:13px}
+details.help p{margin:9px 0 0}
+details.help code{background:var(--sand); padding:1px 5px; border-radius:3px; font-size:12px}
+.foot{border-top:1px solid var(--line); background:var(--white); padding:18px 0; font-size:12px; color:var(--ink-m)}
+.foot a{color:var(--olive)}
+.hidden{display:none !important}
+.srmsg{padding:8px 12px; background:var(--sand); border-radius:var(--r); font-size:12.5px; color:var(--ink-m); margin-top:10px}
+
+/* ---------- Druck ---------- */
+@media print{
+  body{background:#fff; font-size:11pt}
+  .top{background:#fff; color:var(--ink); border-bottom:2px solid var(--olive); padding:0 0 10px}
+  .top h1{color:var(--olive); font-size:17pt}
+  .top p, .brand .logo{color:var(--ink)}
+  .brand .logo{border-color:var(--olive)}
+  .grid{display:block; padding:10px 0 0}
+  .card{box-shadow:none; break-inside:avoid; page-break-inside:avoid}
+  .noprint, .list, .search, .chips, details.help, .foot{display:none !important}
+  .rightcol{position:static}
+  .qty button, .del, .add{display:none}
+  .qty{border:none}
+  .qty input{width:auto; text-align:left; -moz-appearance:textfield}
+  .micros{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <span class="logo">F I M S</span>
+      <div>
+        <h1>P:E&nbsp;Einkaufsplaner</h1>
+        <p>Wochen&shy;warenkorb zusammenstellen und sofort sehen, was er pro Person und Tag liefert — Protein&#8239;:&#8239;Energie-Verhältnis, Makros und Mikronährstoffe.</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+<div class="grid">
+
+  <!-- ====================== LINKE SPALTE ====================== -->
+  <div>
+    <section class="card noprint">
+      <h2>1 &nbsp;Lebensmittel wählen <span class="sub" id="dbCount"></span></h2>
+      <div class="pad">
+        <div class="search">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"/></svg>
+          <input id="q" type="search" placeholder="Lebensmittel suchen, z.B. Linsen, Broccoli, Lachs …" autocomplete="off">
+        </div>
+        <div class="chips" id="chips"></div>
+        <div class="list" id="list"></div>
+      </div>
+      <details class="help">
+        <summary>Wie lese ich die farbige P:E-Zahl?</summary>
+        <p>Sie zeigt für 100&nbsp;g des Lebensmittels, wie viele Protein-Kalorien auf eine Energie-Kalorie
+        (Fett + verfügbare Kohlenhydrate) kommen. <b>Grün</b> = proteinbetont, <b>Rot</b> = energiebetont.
+        Ballaststoffe zählen nicht zur Energie.</p>
+      </details>
+    </section>
+
+    <section class="card">
+      <h2>2 &nbsp;Wochen-Warenkorb <span class="sub" id="basketSum"></span></h2>
+      <div class="pad">
+        <div id="basket"></div>
+        <div class="btnrow noprint" style="margin-top:14px">
+          <button class="btn ghost" id="printBtn">Einkaufsliste drucken</button>
+          <button class="btn ghost" id="csvBtn">Als CSV speichern</button>
+          <button class="btn ghost" id="clearBtn">Leeren</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card noprint">
+      <h2>Eigene Datenbank</h2>
+      <div class="pad">
+        <p style="margin:0 0 11px; font-size:13px; color:var(--ink-m)">
+          Eigene Lebensmittel-Tabelle (CSV aus Excel, Semikolon- oder Komma-getrennt) laden.
+          Die Vorlage enthält die aktuelle Datenbank mit allen Spalten — einfach in Excel ergänzen,
+          als CSV speichern und hier hochladen.</p>
+        <div class="btnrow">
+          <button class="btn ghost" id="tplBtn">Vorlage herunterladen</button>
+          <label class="btn ghost" style="display:inline-block">
+            CSV laden <input type="file" id="csvIn" accept=".csv,text/csv" class="hidden">
+          </label>
+          <button class="btn ghost hidden" id="resetDbBtn">Zurück zur Standard-Datenbank</button>
+        </div>
+        <div id="importMsg"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ====================== RECHTE SPALTE ====================== -->
+  <div class="rightcol">
+    <section class="card">
+      <h2>3 &nbsp;Auswertung</h2>
+      <div class="pad">
+        <div class="setts noprint">
+          <div class="fld">
+            <label>Personen</label>
+            <div class="seg" id="segPers"></div>
+          </div>
+          <div class="fld">
+            <label>Zeitraum</label>
+            <div class="seg" id="segDays"></div>
+          </div>
+          <div class="fld">
+            <label>Referenzwerte</label>
+            <div class="seg" id="segSex">
+              <button data-v="w" aria-pressed="true">Frau</button>
+              <button data-v="m" aria-pressed="false">Mann</button>
+            </div>
+          </div>
+          <div class="fld">
+            <label>Körpergewicht</label>
+            <div class="numin">
+              <input id="kg" type="number" min="30" max="200" step="1" value="75" aria-label="Körpergewicht in Kilogramm">
+              <span>kg</span>
+            </div>
+          </div>
+          <div class="fld">
+            <label>Intensives Training</label>
+            <div class="numin">
+              <input id="hours" type="number" min="0" max="8" step="0.5" value="1" aria-label="Stunden intensives Training pro Tag">
+              <span>Std./Tag</span>
+            </div>
+          </div>
+          <div class="fld">
+            <label>Schwerpunkt</label>
+            <select class="sel" id="profile" aria-label="Schwerpunkt"></select>
+          </div>
+        </div>
+        <div class="profnote" id="profNote"></div>
+        <div class="srmsg" id="scopeMsg"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Protein&#8239;:&#8239;Energie-Verhältnis <span class="sub">gesamter Warenkorb</span></h2>
+      <div class="pad">
+        <div class="gaugebox">
+          <div class="gauge" id="gauge"></div>
+          <div class="bigpe">
+            <div class="v" id="peVal">–</div>
+            <div class="l">P:E-Ratio</div>
+            <div><span class="zone" id="peZone">Noch nichts gewählt</span></div>
+            <div class="ang" id="peAng">Vektorwinkel –</div>
+          </div>
+        </div>
+      </div>
+      <details class="help">
+        <summary>So wird gerechnet</summary>
+        <p><b>P:E</b> = Protein-Kalorien ÷ Energie-Kalorien, wobei
+        Energie = Fett + <i>verfügbare</i> Kohlenhydrate (ohne Ballaststoffe).
+        Kalorien nach Atwater: Protein 4, Fett 9, verfügbare KH 4, Ballaststoffe 2&nbsp;kcal/g.
+        Der <b>Vektorwinkel</b> ist derselbe Wert als Winkel: 45° entspricht P:E&nbsp;=&nbsp;1,0.</p>
+      </details>
+    </section>
+
+    <section class="card">
+      <h2>Makronährstoffe <span class="sub" id="macroScope"></span></h2>
+      <div class="pad">
+        <div class="kpis" id="kpis"></div>
+        <div class="macro" id="macro"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Mikronährstoffe <span class="sub" id="microScope"></span></h2>
+      <div class="pad">
+        <div class="micros" id="micros"></div>
+        <div class="legend">
+          <span><i class="sw" style="background:var(--red)"></i> unter dem Minimum</span>
+          <span><i class="sw" style="background:var(--amber)"></i> über dem Minimum, unter der Basisversorgung</span>
+          <span><i class="sw" style="background:var(--green)"></i> Basisversorgung erreicht</span>
+          <span><i class="warn">!</i> Datenlücke bei einzelnen Posten</span>
+          <span><b>≈</b> Schätzwert aus Literaturtabellen, nicht aus der Nährwertdatenbank</span>
+        </div>
+      </div>
+      <details class="help">
+        <summary>Referenzwerte und Grenzen dieser Auswertung</summary>
+        <p>Jeder Nährstoff hat bis zu zwei Schwellen. Das <b>Minimum</b> ist der offizielle
+        Referenzwert (D-A-CH beziehungsweise EFSA) — er schützt vor Mangel, nicht mehr;
+        darunter färbt sich der Balken rot. Die <b>Basisversorgung</b> ist der Bedarf für
+        volle Gesundheit und Leistungsfähigkeit; ab dort wird der Balken grün, dazwischen
+        gelb. Nährstoffe ohne eigenen Basiswert haben nur die eine Schwelle.</p>
+        <p>Gerechnet wird nach der Normperson von 75&nbsp;kg:
+        <code>Basiswert × Gewicht/75 + Zuschlag × Gewicht/75 × Trainingsstunden</code>.
+        Einen Trainingszuschlag haben Natrium, Kalium, Magnesium, Calcium, Zink, Jod und
+        Vitamin&nbsp;B1 — Eisen bewusst nicht. Nach Geschlecht unterscheiden sich vor allem
+        Eisen und Zink.</p>
+        <p><b>Bei Sportlern</b> gibt es für die meisten Mikronährstoffe keinen eigenen,
+        höheren Referenzwert. Der Bedarf steigt vor allem mit dem Energieumsatz — wer mehr
+        isst, nimmt automatisch mehr auf. Gesondert zu beachten sind Eisen (vor allem bei
+        Ausdauersportlerinnen), Vitamin D und Calcium für die Knochengesundheit sowie
+        Natrium bei starkem Schwitzen. Die Prozentwerte hier bleiben deshalb bewusst auf den
+        allgemeinen D-A-CH-Referenzwerten.</p>
+        <p>Die Werte gelten für die Lebensmittel so, wie sie eingekauft werden (meist roh).
+        Garverluste, Rüstabfall und Küchenreste sind nicht abgezogen — die reale Zufuhr liegt
+        deshalb etwas tiefer. Das Werkzeug plant den Einkauf, es ersetzt kein Ernährungsprotokoll.</p>
+      </details>
+    </section>
+
+    <section class="card">
+      <h2>Nicht über den Warenkorb <span class="sub">Zielwerte pro Person und Tag</span></h2>
+      <div class="pad">
+        <p style="margin:0 0 12px; font-size:13px; color:var(--ink-m)">
+          Diese Nährstoffe führt die Schweizer Nährwertdatenbank nicht, oder sie kommen
+          ohnehin aus Sonne und Ergänzung. Die Zielwerte rechnen mit Gewicht und
+          Trainingsstunden mit, lassen sich aber nicht gegen den Einkauf prüfen.</p>
+        <div class="micros" id="supp"></div>
+      </div>
+    </section>
+  </div>
+</div>
+</main>
+
+<footer class="foot noprint">
+  <div class="wrap">
+    Nährwertdaten: Schweizer Nährwertdatenbank des Bundesamts für Lebensmittelsicherheit und
+    Veterinärwesen&nbsp;(BLV), <a href="https://naehrwertdaten.ch" target="_blank" rel="noopener">naehrwertdaten.ch</a> ·
+    Referenzwerte: D-A-CH · P:E-Konzept nach Ted Naiman ·
+    <b>FIMS – Förderung Integrative Medizin Schweiz</b>
+  </div>
+</footer>
+
+<script>
+"use strict";
+/* ============================================================
+   Lebensmittel-Datenbank — Werte je 100 g
+   p=Protein g | f=Fett g | c=verfügbare KH g | b=Ballaststoffe g
+   m={Mikronährstoffe}
+   ============================================================ */
+const FOODS_DEFAULT = [{"n":"Aubergine, roh","g":"Gemüse","p":1.0,"f":0.2,"c":3.1,"b":2.4,"m":{"vitA":4.0,"vitD":0.0,"vitE":0.03,"b1":0.04,"b2":0.03,"niacin":0.6,"b6":0.08,"folat":19.0,"b12":0.0,"panto":0.2,"vitC":2.0,"ca":10.0,"mg":13.0,"p":21.0,"k":260.0,"fe":0.3,"zn":0.1,"jod":0.2,"na":3.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.3,"cu":0.081,"mn":0.232,"om3":0.0,"eaa":0.33}},{"n":"Blattsalat (Durchschnitt), roh","g":"Gemüse","p":1.6,"f":0.3,"c":1.4,"b":1.9,"m":{"vitA":163.0,"vitD":0.0,"vitE":0.6,"b1":0.06,"b2":0.08,"niacin":0.37,"b6":0.09,"folat":81.0,"b12":0.0,"panto":0.2,"vitC":16.6,"ca":53.0,"mg":12.0,"p":35.0,"k":270.0,"fe":1.0,"zn":0.3,"jod":5.7,"na":18.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.6,"cu":0.029,"mn":0.25,"om3":0.0,"eaa":0.48}},{"n":"Blumenkohl, roh","g":"Gemüse","p":2.4,"f":0.3,"c":2.3,"b":2.4,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.2,"b1":0.09,"b2":0.08,"niacin":0.6,"b6":0.2,"folat":83.0,"b12":0.0,"panto":0.7,"vitC":55.0,"ca":20.0,"mg":15.0,"p":48.0,"k":320.0,"fe":0.5,"zn":0.3,"jod":0.6,"na":14.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.6,"cu":0.039,"mn":0.155,"om3":0.0,"eaa":0.76}},{"n":"Bohne, grün, roh","g":"Gemüse","p":2.1,"f":0.2,"c":3.6,"b":3.1,"m":{"vitA":32.0,"vitD":0.0,"vitE":0.24,"b1":0.08,"b2":0.1,"niacin":0.7,"b6":0.14,"folat":70.0,"b12":0.0,"panto":0.9,"vitC":16.0,"ca":56.0,"mg":28.0,"p":38.0,"k":240.0,"fe":1.0,"zn":0.3,"jod":3.0,"na":4.0,"bor":0.3,"mol":5,"chr":1.8,"sil":6,"se":0.6,"cu":0.069,"mn":0.216,"om3":0.0,"eaa":0.58}},{"n":"Broccoli, roh","g":"Gemüse","p":3.0,"f":0.4,"c":2.4,"b":3.0,"m":{"vitA":46.0,"vitD":0.0,"vitE":1.0,"b1":0.1,"b2":0.13,"niacin":1.0,"b6":0.19,"folat":110.0,"b12":0.0,"panto":0.9,"vitC":110.0,"ca":93.0,"mg":25.0,"p":67.0,"k":370.0,"fe":1.4,"zn":0.5,"jod":15.0,"na":13.0,"bor":0.31,"mol":8,"chr":14,"sil":3,"se":2.5,"cu":0.049,"mn":0.21,"om3":0.0,"eaa":0.8}},{"n":"Brunnenkresse, roh","g":"Gemüse","p":2.2,"f":0.2,"c":0.3,"b":2.6,"m":{"vitA":227.0,"vitD":0.0,"vitE":1.2,"b1":0.1,"b2":0.12,"niacin":0.4,"b6":0.13,"folat":210.0,"b12":0.0,"panto":0.2,"vitC":60.0,"ca":160.0,"mg":20.0,"p":53.0,"k":300.0,"fe":1.3,"zn":0.2,"jod":2.0,"na":42.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.9,"cu":0.077,"mn":0.244,"om3":0.0,"eaa":0.87}},{"n":"Chicorée, roh","g":"Gemüse","p":1.0,"f":0.2,"c":0.7,"b":2.5,"m":{"vitA":294.0,"vitD":0.0,"vitE":0.1,"b1":0.09,"b2":0.05,"niacin":0.3,"b6":0.03,"folat":52.0,"b12":0.0,"panto":0.4,"vitC":5.0,"ca":20.0,"mg":10.0,"p":25.0,"k":200.0,"fe":0.2,"zn":0.2,"jod":1.0,"na":4.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.2,"cu":0.051,"mn":0.1,"eaa":0.25}},{"n":"Chinakohl, roh","g":"Gemüse","p":1.1,"f":0.3,"c":1.2,"b":1.9,"m":{"vitA":1.0,"vitD":0.0,"vitE":0.24,"b1":0.03,"b2":0.04,"niacin":0.4,"b6":0.12,"folat":66.0,"b12":0.0,"panto":0.2,"vitC":26.0,"ca":40.0,"mg":11.0,"p":30.0,"k":140.0,"fe":0.6,"zn":0.3,"jod":0.3,"na":19.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.6,"cu":0.036,"mn":0.19,"om3":0.0,"eaa":0.38}},{"n":"Cicorino rot, roh","g":"Gemüse","p":1.4,"f":0.1,"c":1.6,"b":3.0,"m":{"vitA":67.0,"vitD":0.0,"vitE":0.57,"b1":0.07,"b2":0.05,"niacin":0.3,"b6":0.07,"folat":13.0,"b12":0.0,"panto":0.0,"vitC":10.0,"ca":36.0,"mg":0.0,"p":30.0,"k":180.0,"fe":0.3,"zn":0.2,"jod":0.0,"na":7.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.9,"cu":0.341,"mn":0.138,"om3":0.0,"eaa":0.4}},{"n":"Eisbergsalat, roh","g":"Gemüse","p":1.0,"f":0.2,"c":1.6,"b":1.8,"m":{"vitA":4.0,"vitD":0.0,"vitE":0.57,"b1":0.05,"b2":0.03,"niacin":0.2,"b6":0.03,"folat":53.0,"b12":0.0,"panto":0.05,"vitC":3.9,"ca":34.0,"mg":7.0,"p":22.0,"k":180.0,"fe":0.4,"zn":0.2,"jod":2.0,"na":3.6,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.1,"cu":0.025,"mn":0.125,"om3":0.0,"eaa":0.16}},{"n":"Endivie, roh","g":"Gemüse","p":1.8,"f":0.2,"c":1.2,"b":1.2,"m":{"vitA":91.0,"vitD":0.0,"vitE":1.0,"b1":0.05,"b2":0.12,"niacin":0.41,"b6":0.05,"folat":110.0,"b12":0.0,"panto":0.9,"vitC":9.4,"ca":54.0,"mg":10.0,"p":54.0,"k":330.0,"fe":1.4,"zn":0.4,"jod":2.9,"na":43.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.2,"cu":0.099,"mn":0.42,"om3":0.0,"eaa":0.44}},{"n":"Erbse, grün, roh","g":"Gemüse","p":6.0,"f":0.7,"c":12.0,"b":6.0,"m":{"vitA":43.0,"vitD":0.0,"vitE":0.2,"b1":0.4,"b2":0.14,"niacin":2.2,"b6":0.16,"folat":70.0,"b12":0.0,"panto":0.5,"vitC":32.0,"ca":26.0,"mg":34.0,"p":130.0,"k":300.0,"fe":1.9,"zn":0.8,"jod":4.2,"na":2.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":1.8,"cu":0.176,"mn":0.41,"om3":0.0,"eaa":1.7}},{"n":"Fenchel, roh","g":"Gemüse","p":1.1,"f":0.3,"c":2.3,"b":3.3,"m":{"vitA":12.0,"vitD":0.0,"vitE":6.0,"b1":0.08,"b2":0.02,"niacin":0.7,"b6":0.06,"folat":55.0,"b12":0.0,"panto":0.2,"vitC":8.0,"ca":37.0,"mg":12.0,"p":38.0,"k":470.0,"fe":0.5,"zn":0.3,"jod":5.0,"na":15.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.7,"cu":0.066,"mn":0.191,"om3":0.0}},{"n":"Gemüse (Durchschnitt), roh","g":"Gemüse","p":1.3,"f":0.3,"c":3.7,"b":2.0,"m":{"vitA":157.0,"vitD":0.0,"vitE":0.8,"b1":0.06,"b2":0.05,"niacin":0.56,"b6":0.13,"folat":45.0,"b12":0.0,"panto":0.28,"vitC":30.4,"ca":27.0,"mg":13.0,"p":30.0,"k":230.0,"fe":0.5,"zn":0.2,"jod":2.6,"na":15.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.4,"cu":0.093,"mn":0.244,"om3":0.0,"eaa":1.19}},{"n":"Gurke, roh","g":"Gemüse","p":0.7,"f":0.1,"c":2.0,"b":0.8,"m":{"vitA":25.0,"vitD":0.0,"vitE":0.09,"b1":0.02,"b2":0.02,"niacin":0.2,"b6":0.04,"folat":13.0,"b12":0.0,"panto":0.3,"vitC":5.0,"ca":15.0,"mg":10.0,"p":18.0,"k":140.0,"fe":0.2,"zn":0.1,"jod":2.9,"na":0.9,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.3,"cu":0.041,"mn":0.079,"om3":0.0,"eaa":0.16}},{"n":"Karotte, roh","g":"Gemüse","p":0.8,"f":0.3,"c":6.6,"b":2.6,"m":{"vitA":790.0,"vitD":0.0,"vitE":0.5,"b1":0.1,"b2":0.05,"niacin":0.6,"b6":0.16,"folat":30.0,"b12":0.0,"panto":0.2,"vitC":7.0,"ca":31.0,"mg":8.4,"p":26.0,"k":160.0,"fe":0.2,"zn":0.1,"jod":1.6,"na":28.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.1,"cu":0.045,"mn":0.143,"om3":0.0,"eaa":0.67}},{"n":"Kefe, roh","g":"Gemüse","p":4.0,"f":0.2,"c":10.0,"b":5.0,"m":{"vitA":43.0,"vitD":0.0,"vitE":0.5,"b1":0.17,"b2":0.15,"niacin":2.7,"b6":0.16,"folat":33.0,"b12":0.0,"panto":0.75,"vitC":25.0,"ca":20.0,"mg":30.0,"p":80.0,"k":300.0,"fe":2.0,"zn":4.1,"jod":4.0,"na":4.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.7,"cu":0.079,"mn":0.244,"om3":0.0,"eaa":1.11}},{"n":"Knoblauch, roh","g":"Gemüse","p":7.0,"f":0.5,"c":24.5,"b":3.0,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.0,"b1":0.2,"b2":0.1,"niacin":0.7,"b6":1.2,"folat":3.0,"b12":0.0,"panto":0.6,"vitC":30.0,"ca":38.0,"mg":21.0,"p":140.0,"k":450.0,"fe":1.4,"zn":0.6,"jod":2.7,"na":10.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":14.2,"cu":0.299,"mn":1.672,"om3":0.0,"eaa":1.68}},{"n":"Knollensellerie, roh","g":"Gemüse","p":1.5,"f":0.3,"c":2.4,"b":5.0,"m":{"vitA":5.0,"vitD":0.0,"vitE":0.36,"b1":0.05,"b2":0.06,"niacin":0.8,"b6":0.17,"folat":40.0,"b12":0.0,"panto":0.5,"vitC":8.0,"ca":43.0,"mg":12.0,"p":63.0,"k":320.0,"fe":0.7,"zn":0.4,"jod":2.5,"na":100.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.7,"cu":0.07,"mn":0.158,"om3":0.0}},{"n":"Kohlgemüse (Durchschnitt), roh","g":"Gemüse","p":2.2,"f":0.3,"c":3.0,"b":2.7,"m":{"vitA":9.0,"vitD":0.0,"vitE":0.98,"b1":0.07,"b2":0.07,"niacin":0.69,"b6":0.17,"folat":78.0,"b12":0.0,"panto":0.42,"vitC":64.8,"ca":52.0,"mg":19.0,"p":50.0,"k":290.0,"fe":0.7,"zn":0.3,"jod":3.2,"na":12.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.3,"cu":0.019,"mn":0.16,"om3":0.0,"eaa":0.27}},{"n":"Kohlrabi, roh","g":"Gemüse","p":1.9,"f":0.2,"c":3.7,"b":1.4,"m":{"vitA":1.0,"vitD":0.0,"vitE":0.4,"b1":0.05,"b2":0.05,"niacin":1.8,"b6":0.07,"folat":70.0,"b12":0.0,"panto":0.1,"vitC":63.0,"ca":64.0,"mg":43.0,"p":50.0,"k":320.0,"fe":0.5,"zn":0.2,"jod":0.7,"na":20.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.7,"cu":0.129,"mn":0.139,"om3":0.0,"eaa":0.38}},{"n":"Kopfsalat, roh","g":"Gemüse","p":1.2,"f":0.2,"c":1.1,"b":1.6,"m":{"vitA":94.0,"vitD":0.0,"vitE":0.6,"b1":0.06,"b2":0.08,"niacin":0.4,"b6":0.06,"folat":37.0,"b12":0.0,"panto":0.11,"vitC":13.0,"ca":31.0,"mg":7.6,"p":17.0,"k":140.0,"fe":0.4,"zn":0.2,"jod":3.3,"na":2.3,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.6,"cu":0.016,"mn":0.179,"om3":0.0,"eaa":0.36}},{"n":"Lattich, roh","g":"Gemüse","p":1.2,"f":0.3,"c":1.3,"b":1.5,"m":{"vitA":210.0,"vitD":0.0,"vitE":0.5,"b1":0.08,"b2":0.07,"niacin":0.4,"b6":0.05,"folat":84.0,"b12":0.0,"panto":0.2,"vitC":8.0,"ca":37.0,"mg":11.0,"p":24.0,"k":230.0,"fe":0.3,"zn":0.0,"jod":3.3,"na":8.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.4,"cu":0.048,"mn":0.155,"om3":0.0,"eaa":0.39}},{"n":"Lauch, roh","g":"Gemüse","p":1.6,"f":0.3,"c":3.7,"b":2.8,"m":{"vitA":7.0,"vitD":0.0,"vitE":0.73,"b1":0.07,"b2":0.04,"niacin":0.4,"b6":0.3,"folat":96.0,"b12":0.0,"panto":0.1,"vitC":18.0,"ca":31.0,"mg":11.0,"p":35.0,"k":260.0,"fe":0.9,"zn":0.3,"jod":8.6,"na":12.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":1.0,"cu":0.12,"mn":0.481,"om3":0.0,"eaa":0.45}},{"n":"Mais, roh","g":"Gemüse","p":3.3,"f":1.2,"c":15.7,"b":2.8,"m":{"vitA":9.0,"vitD":0.0,"vitE":0.1,"b1":0.15,"b2":0.12,"niacin":1.7,"b6":0.22,"folat":43.0,"b12":0.0,"panto":0.89,"vitC":12.0,"ca":2.2,"mg":27.0,"p":83.0,"k":290.0,"fe":0.4,"zn":0.6,"jod":3.3,"na":0.3,"bor":0.3,"mol":7,"chr":5,"sil":3,"se":0.6,"cu":0.054,"mn":0.163,"om3":0.0,"eaa":1.26}},{"n":"Mangold, roh","g":"Gemüse","p":2.1,"f":0.2,"c":2.7,"b":1.0,"m":{"vitA":242.0,"vitD":0.0,"vitE":0.03,"b1":0.07,"b2":0.13,"niacin":0.4,"b6":0.1,"folat":22.0,"b12":0.0,"panto":0.2,"vitC":35.0,"ca":80.0,"mg":81.0,"p":43.0,"k":380.0,"fe":2.3,"zn":0.3,"jod":1.0,"na":170.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.9,"cu":0.179,"mn":0.366,"om3":0.0,"eaa":0.75}},{"n":"Nüsslisalat, roh","g":"Gemüse","p":2.0,"f":0.4,"c":2.0,"b":1.7,"m":{"vitA":330.0,"vitD":0.0,"vitE":0.3,"b1":0.07,"b2":0.09,"niacin":0.4,"b6":0.27,"folat":160.0,"b12":0.0,"panto":0.04,"vitC":38.0,"ca":38.0,"mg":13.0,"p":53.0,"k":460.0,"fe":2.1,"zn":0.5,"jod":35.0,"na":4.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.9,"cu":0.134,"mn":0.359,"eaa":0.68}},{"n":"Peperoni, grün, roh","g":"Gemüse","p":0.8,"f":0.3,"c":2.6,"b":2.0,"m":{"vitA":18.0,"vitD":0.0,"vitE":0.85,"b1":0.01,"b2":0.01,"niacin":0.1,"b6":0.32,"folat":34.0,"b12":0.0,"panto":0.1,"vitC":127.0,"ca":6.0,"mg":6.0,"p":15.0,"k":160.0,"fe":0.3,"zn":0.2,"jod":2.0,"na":6.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.0,"cu":0.066,"mn":0.122,"om3":0.0,"eaa":0.29}},{"n":"Peperoni, rot, roh","g":"Gemüse","p":0.9,"f":0.4,"c":5.2,"b":2.0,"m":{"vitA":189.0,"vitD":0.0,"vitE":0.7,"b1":0.04,"b2":0.03,"niacin":0.9,"b6":0.3,"folat":22.0,"b12":0.0,"panto":0.1,"vitC":165.0,"ca":9.0,"mg":12.0,"p":20.0,"k":170.0,"fe":0.4,"zn":0.3,"jod":1.0,"na":3.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.1,"cu":0.017,"mn":0.112,"om3":0.0,"eaa":0.25}},{"n":"Radieschen, roh","g":"Gemüse","p":1.0,"f":0.1,"c":2.1,"b":1.6,"m":{"vitA":1.0,"vitD":0.0,"vitE":0.01,"b1":0.03,"b2":0.03,"niacin":0.25,"b6":0.06,"folat":24.0,"b12":0.0,"panto":0.18,"vitC":29.0,"ca":26.0,"mg":9.4,"p":18.0,"k":240.0,"fe":0.4,"zn":0.2,"jod":1.2,"na":21.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.6,"cu":0.05,"mn":0.069,"om3":0.0,"eaa":0.21}},{"n":"Rande, roh","g":"Gemüse","p":1.5,"f":0.1,"c":8.4,"b":2.5,"m":{"vitA":1.0,"vitD":0.0,"vitE":0.05,"b1":0.02,"b2":0.04,"niacin":0.23,"b6":0.05,"folat":83.0,"b12":0.0,"panto":0.13,"vitC":10.0,"ca":17.0,"mg":21.0,"p":45.0,"k":410.0,"fe":0.9,"zn":0.4,"jod":0.4,"na":58.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.7,"cu":0.075,"mn":0.329,"om3":0.0,"eaa":0.38}},{"n":"Rettich, roh","g":"Gemüse","p":0.6,"f":0.3,"c":2.6,"b":1.2,"m":{"vitA":2.0,"vitD":0.0,"vitE":0.0,"b1":0.03,"b2":0.04,"niacin":0.3,"b6":0.07,"folat":50.0,"b12":0.0,"panto":0.1,"vitC":23.0,"ca":20.0,"mg":7.0,"p":18.0,"k":240.0,"fe":0.8,"zn":0.2,"jod":1.2,"na":12.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.7,"cu":0.115,"mn":0.038,"om3":0.0,"eaa":0.18}},{"n":"Riesenkürbis, roh","g":"Gemüse","p":0.6,"f":0.1,"c":4.5,"b":1.0,"m":{"vitA":216.0,"vitD":0.0,"vitE":0.1,"b1":0.0,"b2":0.07,"niacin":0.5,"b6":0.07,"folat":25.0,"b12":0.0,"panto":0.4,"vitC":5.0,"ca":18.0,"mg":7.0,"p":20.0,"k":270.0,"fe":0.4,"zn":0.8,"jod":0.2,"na":1.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.4,"cu":0.071,"mn":0.163,"om3":0.0,"eaa":0.42}},{"n":"Rosenkohl, roh","g":"Gemüse","p":4.0,"f":0.5,"c":3.5,"b":4.3,"m":{"vitA":12.0,"vitD":0.0,"vitE":0.9,"b1":0.14,"b2":0.13,"niacin":0.7,"b6":0.28,"folat":130.0,"b12":0.0,"panto":0.7,"vitC":110.0,"ca":31.0,"mg":23.0,"p":77.0,"k":410.0,"fe":1.1,"zn":0.5,"jod":0.7,"na":9.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":1.6,"cu":0.07,"mn":0.337,"om3":0.0,"eaa":0.96}},{"n":"Rotkohl, roh","g":"Gemüse","p":1.4,"f":0.3,"c":4.0,"b":3.0,"m":{"vitA":7.0,"vitD":0.0,"vitE":0.9,"b1":0.05,"b2":0.03,"niacin":0.4,"b6":0.15,"folat":43.0,"b12":0.0,"panto":0.3,"vitC":57.0,"ca":52.0,"mg":13.0,"p":36.0,"k":250.0,"fe":0.5,"zn":0.2,"jod":2.9,"na":10.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.6,"cu":0.017,"mn":0.243,"om3":0.0,"eaa":0.3}},{"n":"Rucola, roh","g":"Gemüse","p":2.6,"f":0.7,"c":2.1,"b":1.6,"m":{"vitA":237.0,"vitD":0.0,"vitE":0.43,"b1":0.04,"b2":0.09,"niacin":0.3,"b6":0.07,"folat":97.0,"b12":0.0,"panto":0.0,"vitC":15.0,"ca":160.0,"mg":0.0,"p":52.0,"k":370.0,"fe":1.5,"zn":0.4,"jod":0.0,"na":27.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.3,"cu":0.076,"mn":0.321,"om3":0.0}},{"n":"Schwarzwurzel, roh","g":"Gemüse","p":1.4,"f":0.4,"c":2.1,"b":18.3,"m":{"vitA":2.0,"vitD":0.0,"vitE":3.0,"b1":0.11,"b2":0.04,"niacin":0.35,"b6":0.06,"folat":50.0,"b12":0.0,"panto":0.17,"vitC":4.0,"ca":53.0,"mg":23.0,"p":76.0,"k":320.0,"fe":3.3,"zn":0.2,"jod":2.5,"na":5.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.8,"cu":0.089,"mn":0.268}},{"n":"Spargel, roh","g":"Gemüse","p":2.2,"f":0.2,"c":3.3,"b":1.7,"m":{"vitA":49.0,"vitD":0.0,"vitE":1.7,"b1":0.15,"b2":0.13,"niacin":1.1,"b6":0.08,"folat":130.0,"b12":0.0,"panto":0.2,"vitC":14.0,"ca":22.0,"mg":18.0,"p":56.0,"k":270.0,"fe":0.9,"zn":0.4,"jod":7.0,"na":3.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":2.3,"cu":0.189,"mn":0.158,"om3":0.0,"eaa":0.69}},{"n":"Spinat, roh","g":"Gemüse","p":2.7,"f":0.4,"c":0.8,"b":2.6,"m":{"vitA":401.0,"vitD":0.0,"vitE":1.8,"b1":0.1,"b2":0.22,"niacin":0.7,"b6":0.2,"folat":190.0,"b12":0.0,"panto":0.2,"vitC":40.0,"ca":100.0,"mg":58.0,"p":52.0,"k":530.0,"fe":2.7,"zn":0.6,"jod":12.0,"na":65.0,"bor":0.3,"mol":9,"chr":5,"sil":3,"se":1.0,"cu":0.13,"mn":0.897,"om3":0.0,"eaa":1.11}},{"n":"Stangensellerie, roh","g":"Gemüse","p":0.9,"f":0.1,"c":1.5,"b":2.0,"m":{"vitA":48.0,"vitD":0.0,"vitE":0.2,"b1":0.05,"b2":0.04,"niacin":0.4,"b6":0.07,"folat":18.0,"b12":0.0,"panto":0.4,"vitC":8.0,"ca":52.0,"mg":14.0,"p":32.0,"k":300.0,"fe":0.5,"zn":0.1,"jod":1.0,"na":110.0,"bor":0.5,"mol":8,"chr":5,"sil":3,"se":0.4,"cu":0.035,"mn":0.103,"om3":0.0,"eaa":0.17}},{"n":"Tomate, roh","g":"Gemüse","p":0.8,"f":0.3,"c":3.2,"b":1.2,"m":{"vitA":47.0,"vitD":0.0,"vitE":1.0,"b1":0.06,"b2":0.04,"niacin":0.6,"b6":0.08,"folat":24.0,"b12":0.0,"panto":0.3,"vitC":18.0,"ca":8.5,"mg":6.3,"p":17.0,"k":220.0,"fe":0.2,"zn":0.1,"jod":1.1,"na":1.6,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.0,"cu":0.059,"mn":0.114,"om3":0.0,"eaa":0.17}},{"n":"Weisskohl, roh","g":"Gemüse","p":1.4,"f":0.2,"c":4.2,"b":3.0,"m":{"vitA":4.0,"vitD":0.0,"vitE":1.7,"b1":0.04,"b2":0.04,"niacin":0.32,"b6":0.19,"folat":31.0,"b12":0.0,"panto":0.26,"vitC":48.0,"ca":56.0,"mg":12.0,"p":33.0,"k":260.0,"fe":0.3,"zn":0.2,"jod":3.0,"na":4.8,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.3,"cu":0.019,"mn":0.16,"om3":0.0,"eaa":0.27}},{"n":"Wirz, roh","g":"Gemüse","p":2.8,"f":0.3,"c":2.9,"b":2.6,"m":{"vitA":4.0,"vitD":0.0,"vitE":2.5,"b1":0.06,"b2":0.06,"niacin":0.33,"b6":0.16,"folat":90.0,"b12":0.0,"panto":0.21,"vitC":49.0,"ca":64.0,"mg":12.0,"p":56.0,"k":240.0,"fe":0.6,"zn":0.2,"jod":2.6,"na":8.7,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.9,"cu":0.062,"mn":0.18,"om3":0.0,"eaa":0.6}},{"n":"Wurzel- und Knollengemüse (Durchschnitt), roh","g":"Gemüse","p":1.0,"f":0.3,"c":6.0,"b":2.8,"m":{"vitA":570.0,"vitD":0.0,"vitE":0.43,"b1":0.08,"b2":0.05,"niacin":0.66,"b6":0.15,"folat":38.0,"b12":0.0,"panto":0.22,"vitC":11.2,"ca":33.0,"mg":12.0,"p":33.0,"k":210.0,"fe":0.3,"zn":0.2,"jod":1.6,"na":38.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.1,"cu":0.045,"mn":0.143,"om3":0.0,"eaa":0.67}},{"n":"Zucchetti, roh","g":"Gemüse","p":1.8,"f":0.2,"c":2.0,"b":1.0,"m":{"vitA":14.0,"vitD":0.0,"vitE":0.0,"b1":0.05,"b2":0.04,"niacin":0.6,"b6":0.11,"folat":50.0,"b12":0.0,"panto":0.2,"vitC":20.0,"ca":19.0,"mg":23.0,"p":31.0,"k":230.0,"fe":0.8,"zn":0.2,"jod":2.3,"na":3.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.2,"cu":0.053,"mn":0.177,"om3":0.0,"eaa":0.36}},{"n":"Zuckerhutsalat, roh","g":"Gemüse","p":1.2,"f":0.2,"c":1.5,"b":1.6,"m":{"vitA":67.0,"vitD":0.0,"vitE":0.5,"b1":0.06,"b2":0.08,"niacin":0.31,"b6":0.07,"folat":34.0,"b12":0.0,"panto":0.15,"vitC":14.0,"ca":35.0,"mg":10.0,"p":30.0,"k":230.0,"fe":1.0,"zn":0.2,"jod":3.3,"na":10.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.3,"cu":0.295,"mn":0.429,"om3":0.0,"eaa":0.48}},{"n":"Zwiebel, roh","g":"Gemüse","p":1.3,"f":0.2,"c":7.0,"b":1.8,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.14,"b1":0.06,"b2":0.02,"niacin":0.3,"b6":0.14,"folat":20.0,"b12":0.0,"panto":0.1,"vitC":7.0,"ca":28.0,"mg":9.4,"p":34.0,"k":100.0,"fe":0.3,"zn":0.2,"jod":1.8,"na":3.8,"bor":0.2,"mol":8,"chr":5,"sil":3,"se":0.5,"cu":0.039,"mn":0.129,"om3":0.0,"eaa":0.17}},{"n":"Basilikum, roh","g":"Pilze & Kräuter","p":3.1,"f":0.8,"c":5.1,"b":3.1,"m":{"vitA":405.0,"vitD":0.0,"vitE":1.0,"b1":0.08,"b2":0.31,"niacin":1.1,"b6":0.18,"folat":50.0,"b12":0.0,"panto":0.2,"vitC":26.0,"ca":250.0,"mg":11.0,"p":37.0,"k":300.0,"fe":5.5,"zn":0.7,"jod":0.9,"na":9.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.3,"cu":0.385,"mn":1.148,"om3":0.0,"eaa":0.89}},{"n":"Champignon, roh","g":"Pilze & Kräuter","p":2.9,"f":0.3,"c":1.1,"b":1.9,"m":{"vitA":1.0,"vitD":1.9,"vitE":0.1,"b1":0.1,"b2":0.45,"niacin":4.0,"b6":0.1,"folat":30.0,"b12":0.0,"panto":2.2,"vitC":3.0,"ca":7.0,"mg":11.0,"p":100.0,"k":370.0,"fe":1.0,"zn":0.5,"jod":18.0,"na":5.7,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":9.3,"cu":0.318,"mn":0.047,"om3":0.0,"eaa":0.85}},{"n":"Eierschwamm, roh","g":"Pilze & Kräuter","p":1.6,"f":0.5,"c":0.2,"b":4.7,"m":{"vitA":48.0,"vitD":2.1,"vitE":0.1,"b1":0.02,"b2":0.23,"niacin":6.5,"b6":0.04,"folat":25.0,"b12":0.0,"panto":2.5,"vitC":6.0,"ca":8.0,"mg":14.0,"p":44.0,"k":510.0,"fe":6.5,"zn":0.6,"jod":3.0,"na":3.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":2.2,"cu":0.353,"mn":0.286}},{"n":"Morchel, roh","g":"Pilze & Kräuter","p":1.7,"f":0.3,"c":0.5,"b":7.0,"m":{"vitA":0.0,"vitD":3.1,"vitE":0.19,"b1":0.13,"b2":0.06,"niacin":5.0,"b6":0.05,"folat":25.0,"b12":0.0,"panto":2.5,"vitC":5.0,"ca":11.0,"mg":16.0,"p":160.0,"k":390.0,"fe":1.2,"zn":0.5,"jod":10.0,"na":2.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":2.2,"cu":0.625,"mn":0.587,"om3":0.0}},{"n":"Petersilie, roh","g":"Pilze & Kräuter","p":3.9,"f":0.5,"c":6.8,"b":4.3,"m":{"vitA":385.0,"vitD":0.0,"vitE":3.5,"b1":0.15,"b2":0.3,"niacin":1.4,"b6":0.2,"folat":130.0,"b12":0.0,"panto":0.31,"vitC":182.0,"ca":210.0,"mg":37.0,"p":110.0,"k":850.0,"fe":5.9,"zn":0.8,"jod":3.4,"na":38.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.1,"cu":0.149,"mn":0.16,"om3":0.0,"eaa":1.09}},{"n":"Pfefferminze, roh","g":"Pilze & Kräuter","p":3.8,"f":0.7,"c":5.3,"b":3.0,"m":{"vitA":61.0,"vitD":0.0,"vitE":5.0,"b1":0.12,"b2":0.33,"niacin":1.1,"b6":0.05,"folat":110.0,"b12":0.0,"panto":0.19,"vitC":31.0,"ca":210.0,"mg":30.0,"p":75.0,"k":260.0,"fe":9.5,"zn":1.2,"jod":4.0,"na":15.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"cu":0.329,"mn":1.176,"eaa":1.31}},{"n":"Pilz (Durchschnitt), roh","g":"Pilze & Kräuter","p":2.4,"f":0.4,"c":0.6,"b":4.9,"m":{"vitA":12.0,"vitD":2.6,"vitE":0.14,"b1":0.07,"b2":0.28,"niacin":5.1,"b6":0.06,"folat":26.0,"b12":0.0,"panto":2.5,"vitC":4.1,"ca":7.6,"mg":13.0,"p":97.0,"k":400.0,"fe":2.4,"zn":0.8,"jod":8.6,"na":4.2,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":9.3,"cu":0.318,"mn":0.047,"om3":0.0,"eaa":0.85}},{"n":"Rosmarin, roh","g":"Pilze & Kräuter","p":0.8,"f":2.5,"c":7.7,"b":2.9,"m":{"vitA":46.0,"vitD":0.0,"vitE":0.86,"b1":0.08,"b2":0.12,"niacin":0.17,"b6":0.05,"folat":0.0,"b12":0.0,"panto":0.0,"vitC":16.5,"ca":210.0,"mg":36.0,"p":12.0,"k":160.0,"fe":4.8,"zn":0.5,"jod":1.0,"na":8.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"cu":0.301,"mn":0.96,"eaa":1.16}},{"n":"Salbei, roh","g":"Pilze & Kräuter","p":1.7,"f":2.0,"c":6.9,"b":2.9,"m":{"vitA":235.0,"vitD":0.0,"vitE":0.75,"b1":0.12,"b2":0.06,"niacin":0.92,"b6":0.54,"folat":0.0,"b12":0.0,"panto":0.0,"vitC":0.0,"ca":270.0,"mg":69.0,"p":15.0,"k":170.0,"fe":4.5,"zn":0.8,"jod":1.0,"na":2.0,"bor":0.3,"mol":8,"chr":5,"sil":3}},{"n":"Schnittlauch, roh","g":"Pilze & Kräuter","p":3.0,"f":0.6,"c":1.9,"b":2.3,"m":{"vitA":218.0,"vitD":0.0,"vitE":1.6,"b1":0.08,"b2":0.11,"niacin":0.7,"b6":0.13,"folat":130.0,"b12":0.0,"panto":0.3,"vitC":60.0,"ca":86.0,"mg":40.0,"p":54.0,"k":280.0,"fe":1.5,"zn":0.5,"jod":4.2,"na":3.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":0.9,"cu":0.157,"mn":0.373,"om3":0.0,"eaa":1.0}},{"n":"Steinpilz, roh","g":"Pilze & Kräuter","p":3.6,"f":0.4,"c":0.5,"b":6.0,"m":{"vitA":0.0,"vitD":3.1,"vitE":0.16,"b1":0.03,"b2":0.37,"niacin":4.9,"b6":0.03,"folat":25.0,"b12":0.0,"panto":2.7,"vitC":2.5,"ca":4.2,"mg":12.0,"p":85.0,"k":340.0,"fe":1.0,"zn":1.5,"jod":3.6,"na":6.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"se":26.0,"cu":0.5,"mn":0.142,"om3":0.0,"eaa":1.0}},{"n":"Thymian, roh","g":"Pilze & Kräuter","p":1.5,"f":1.2,"c":7.4,"b":3.0,"m":{"vitA":238.0,"vitD":0.0,"vitE":0.8,"b1":0.08,"b2":0.06,"niacin":0.8,"b6":0.15,"folat":20.0,"b12":0.0,"panto":0.0,"vitC":0.0,"ca":310.0,"mg":36.0,"p":32.0,"k":130.0,"fe":20.0,"zn":1.0,"jod":1.0,"na":9.0,"bor":0.3,"mol":8,"chr":5,"sil":3,"cu":0.555,"mn":1.719}},{"n":"Ananas, roh","g":"Früchte","p":0.4,"f":0.2,"c":11.3,"b":1.4,"m":{"vitA":5.0,"vitD":0.0,"vitE":0.1,"b1":0.08,"b2":0.03,"niacin":0.3,"b6":0.09,"folat":14.0,"b12":0.0,"panto":0.2,"vitC":18.0,"ca":15.0,"mg":15.0,"p":11.0,"k":150.0,"fe":0.3,"zn":0.1,"jod":1.4,"na":2.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.1,"cu":0.11,"mn":0.927,"om3":0.0,"eaa":0.16}},{"n":"Apfel, geschält, getrocknet","g":"Früchte","p":1.5,"f":2.0,"c":63.2,"b":9.2,"m":{"vitA":0.0,"vitD":0.0,"vitE":1.8,"b1":0.09,"b2":0.06,"niacin":0.31,"b6":0.15,"folat":20.0,"b12":0.0,"panto":0.0,"vitC":12.2,"ca":15.0,"mg":31.0,"p":56.0,"k":520.0,"fe":2.0,"zn":0.6,"jod":10.0,"na":15.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":1.3,"cu":0.191,"mn":0.09,"om3":0.0,"eaa":0.29}},{"n":"Apfel, roh","g":"Früchte","p":0.3,"f":0.3,"c":11.7,"b":2.1,"m":{"vitA":2.0,"vitD":0.0,"vitE":0.5,"b1":0.03,"b2":0.02,"niacin":0.1,"b6":0.05,"folat":13.0,"b12":0.0,"panto":0.1,"vitC":5.0,"ca":5.0,"mg":4.0,"p":9.0,"k":120.0,"fe":0.2,"zn":0.1,"jod":0.8,"na":4.0,"bor":0.32,"mol":3,"chr":1,"sil":1.5,"se":0.0,"cu":0.027,"mn":0.035,"om3":0.0,"eaa":0.06}},{"n":"Aprikose, getrocknet","g":"Früchte","p":5.0,"f":0.5,"c":47.9,"b":17.7,"m":{"vitA":458.0,"vitD":0.0,"vitE":4.5,"b1":0.01,"b2":0.16,"niacin":3.2,"b6":0.26,"folat":13.0,"b12":0.0,"panto":0.7,"vitC":8.0,"ca":82.0,"mg":50.0,"p":110.0,"k":1370.0,"fe":5.2,"zn":0.4,"jod":2.7,"na":11.0,"bor":2.11,"mol":3,"chr":1,"sil":1.5,"se":2.2,"cu":0.343,"mn":0.235,"om3":0.0,"eaa":0.54}},{"n":"Aprikose, roh","g":"Früchte","p":0.8,"f":0.1,"c":10.0,"b":2.1,"m":{"vitA":167.0,"vitD":0.0,"vitE":0.7,"b1":0.04,"b2":0.05,"niacin":0.6,"b6":0.07,"folat":7.0,"b12":0.0,"panto":0.3,"vitC":7.0,"ca":16.0,"mg":10.0,"p":20.0,"k":320.0,"fe":0.4,"zn":0.1,"jod":0.5,"na":2.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.1,"cu":0.078,"mn":0.077,"om3":0.0,"eaa":0.41}},{"n":"Banane, getrocknet","g":"Früchte","p":3.0,"f":1.0,"c":60.2,"b":5.5,"m":{"vitA":8.0,"vitD":0.0,"vitE":0.6,"b1":0.1,"b2":0.18,"niacin":2.0,"b6":0.81,"folat":33.0,"b12":0.0,"panto":0.54,"vitC":4.0,"ca":20.0,"mg":90.0,"p":75.0,"k":1150.0,"fe":1.3,"zn":0.6,"jod":8.1,"na":8.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":3.9,"cu":0.391,"mn":0.574,"om3":0.0}},{"n":"Banane, roh","g":"Früchte","p":1.1,"f":0.3,"c":21.0,"b":2.0,"m":{"vitA":9.0,"vitD":0.0,"vitE":0.29,"b1":0.04,"b2":0.07,"niacin":0.6,"b6":0.47,"folat":23.0,"b12":0.0,"panto":0.3,"vitC":12.0,"ca":8.0,"mg":30.0,"p":22.0,"k":380.0,"fe":0.4,"zn":0.2,"jod":2.0,"na":1.0,"bor":0.16,"mol":3,"chr":0.8,"sil":1.5,"se":1.0,"cu":0.078,"mn":0.27,"om3":0.0,"eaa":0.36}},{"n":"Beeren (Durchschnitt), roh","g":"Früchte","p":0.8,"f":0.5,"c":7.2,"b":2.8,"m":{"vitA":1.0,"vitD":0.0,"vitE":0.36,"b1":0.02,"b2":0.03,"niacin":0.49,"b6":0.06,"folat":55.0,"b12":0.0,"panto":0.27,"vitC":54.2,"ca":20.0,"mg":12.0,"p":23.0,"k":160.0,"fe":0.5,"zn":0.1,"jod":1.2,"na":2.1,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.4,"cu":0.048,"mn":0.386,"om3":0.0,"eaa":0.16}},{"n":"Birne, getrocknet","g":"Früchte","p":2.4,"f":1.4,"c":59.7,"b":13.5,"m":{"vitA":0.0,"vitD":0.0,"vitE":1.5,"b1":0.09,"b2":0.09,"niacin":0.58,"b6":0.04,"folat":39.0,"b12":0.0,"panto":0.18,"vitC":14.5,"ca":43.0,"mg":34.0,"p":72.0,"k":420.0,"fe":1.2,"zn":1.1,"jod":5.0,"na":10.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.2,"cu":0.371,"mn":0.327,"om3":0.0}},{"n":"Birne, roh","g":"Früchte","p":0.4,"f":0.3,"c":12.2,"b":2.3,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.5,"b1":0.03,"b2":0.03,"niacin":0.2,"b6":0.02,"folat":10.0,"b12":0.0,"panto":0.1,"vitC":5.0,"ca":10.0,"mg":7.0,"p":13.0,"k":120.0,"fe":0.2,"zn":0.1,"jod":0.8,"na":2.0,"bor":0.32,"mol":3,"chr":1,"sil":1.5,"se":0.1,"cu":0.082,"mn":0.048,"om3":0.0,"eaa":0.09}},{"n":"Brombeere, roh","g":"Früchte","p":1.0,"f":0.4,"c":6.2,"b":6.0,"m":{"vitA":12.0,"vitD":0.0,"vitE":4.0,"b1":0.03,"b2":0.05,"niacin":0.5,"b6":0.05,"folat":34.0,"b12":0.0,"panto":0.2,"vitC":20.0,"ca":30.0,"mg":22.0,"p":30.0,"k":200.0,"fe":1.0,"zn":0.1,"jod":0.4,"na":3.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.4,"cu":0.165,"mn":0.646,"om3":0.0}},{"n":"Dattel, getrocknet","g":"Früchte","p":2.5,"f":0.5,"c":69.0,"b":7.1,"m":{"vitA":2.0,"vitD":0.0,"vitE":0.2,"b1":0.06,"b2":0.1,"niacin":1.7,"b6":0.15,"folat":28.0,"b12":0.0,"panto":0.8,"vitC":2.0,"ca":62.0,"mg":58.0,"p":74.0,"k":680.0,"fe":3.0,"zn":0.3,"jod":1.0,"na":3.0,"bor":1.08,"mol":3,"chr":1,"sil":1.5,"se":3.0,"cu":0.206,"mn":0.262,"om3":0.0,"eaa":0.43}},{"n":"Erdbeere, roh","g":"Früchte","p":0.7,"f":0.5,"c":7.0,"b":2.2,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.2,"b1":0.02,"b2":0.03,"niacin":0.5,"b6":0.06,"folat":62.0,"b12":0.0,"panto":0.3,"vitC":60.0,"ca":20.0,"mg":12.0,"p":23.0,"k":150.0,"fe":0.4,"zn":0.1,"jod":1.0,"na":2.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.4,"cu":0.048,"mn":0.386,"om3":0.0,"eaa":0.16}},{"n":"Feige, getrocknet","g":"Früchte","p":3.2,"f":1.2,"c":56.8,"b":11.0,"m":{"vitA":7.0,"vitD":0.0,"vitE":2.0,"b1":0.08,"b2":0.09,"niacin":0.8,"b6":0.22,"folat":13.0,"b12":0.0,"panto":0.4,"vitC":1.0,"ca":160.0,"mg":62.0,"p":71.0,"k":770.0,"fe":2.5,"zn":0.9,"jod":4.0,"na":14.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.6,"cu":0.287,"mn":0.51,"om3":0.0,"eaa":0.68}},{"n":"Feige, roh","g":"Früchte","p":0.9,"f":0.3,"c":15.5,"b":3.0,"m":{"vitA":4.0,"vitD":0.0,"vitE":0.5,"b1":0.05,"b2":0.06,"niacin":0.5,"b6":0.11,"folat":7.0,"b12":0.0,"panto":0.3,"vitC":5.0,"ca":60.0,"mg":18.0,"p":23.0,"k":230.0,"fe":0.8,"zn":0.2,"jod":1.5,"na":3.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.2,"cu":0.07,"mn":0.128,"om3":0.0,"eaa":0.18}},{"n":"Früchte (Durchschnitt), roh","g":"Früchte","p":0.7,"f":0.3,"c":11.8,"b":2.0,"m":{"vitA":11.0,"vitD":0.0,"vitE":0.46,"b1":0.04,"b2":0.04,"niacin":0.35,"b6":0.11,"folat":23.0,"b12":0.0,"panto":0.19,"vitC":20.9,"ca":15.0,"mg":11.0,"p":16.0,"k":190.0,"fe":0.3,"zn":0.1,"jod":1.2,"na":2.7,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.0,"cu":0.027,"mn":0.035,"om3":0.0,"eaa":0.06}},{"n":"Grapefruit, roh","g":"Früchte","p":0.7,"f":0.1,"c":5.9,"b":1.3,"m":{"vitA":1.0,"vitD":0.0,"vitE":0.25,"b1":0.04,"b2":0.02,"niacin":0.3,"b6":0.04,"folat":14.0,"b12":0.0,"panto":0.3,"vitC":37.0,"ca":19.0,"mg":9.0,"p":12.0,"k":140.0,"fe":0.2,"zn":0.1,"jod":1.3,"na":1.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.3,"cu":0.047,"mn":0.012,"om3":0.0,"eaa":0.11}},{"n":"Heidelbeere, roh","g":"Früchte","p":0.6,"f":0.5,"c":11.3,"b":3.0,"m":{"vitA":3.0,"vitD":0.0,"vitE":1.9,"b1":0.03,"b2":0.03,"niacin":0.4,"b6":0.05,"folat":6.0,"b12":0.0,"panto":0.1,"vitC":20.0,"ca":9.0,"mg":4.0,"p":11.0,"k":68.0,"fe":0.5,"zn":0.1,"jod":1.0,"na":2.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.1,"cu":0.057,"mn":0.336,"om3":0.0,"eaa":0.18}},{"n":"Himbeere, roh","g":"Früchte","p":1.2,"f":0.6,"c":7.0,"b":6.7,"m":{"vitA":2.0,"vitD":0.0,"vitE":0.2,"b1":0.03,"b2":0.04,"niacin":0.5,"b6":0.06,"folat":40.0,"b12":0.0,"panto":0.2,"vitC":25.0,"ca":22.0,"mg":20.0,"p":29.0,"k":220.0,"fe":0.7,"zn":0.5,"jod":3.0,"na":3.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.2,"cu":0.09,"mn":0.67,"om3":0.0}},{"n":"Holunderbeere, schwarz, roh","g":"Früchte","p":2.5,"f":0.5,"c":7.4,"b":4.0,"m":{"vitA":27.0,"vitD":0.0,"vitE":1.0,"b1":0.07,"b2":0.07,"niacin":1.6,"b6":0.25,"folat":17.0,"b12":0.0,"panto":0.16,"vitC":18.0,"ca":37.0,"mg":30.0,"p":57.0,"k":300.0,"fe":1.6,"zn":0.2,"jod":3.0,"na":1.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.6,"cu":0.061,"om3":0.0,"eaa":0.26}},{"n":"Honigmelone, roh","g":"Früchte","p":0.7,"f":0.1,"c":8.0,"b":0.9,"m":{"vitA":4.0,"vitD":0.0,"vitE":0.1,"b1":0.04,"b2":0.02,"niacin":0.5,"b6":0.09,"folat":100.0,"b12":0.0,"panto":0.2,"vitC":25.0,"ca":14.0,"mg":14.0,"p":17.0,"k":300.0,"fe":0.2,"zn":0.1,"jod":1.0,"na":18.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.7,"cu":0.024,"mn":0.027,"om3":0.0,"eaa":0.11}},{"n":"Johannisbeere, rot, roh","g":"Früchte","p":1.1,"f":0.5,"c":5.0,"b":8.2,"m":{"vitA":1.0,"vitD":0.0,"vitE":0.1,"b1":0.04,"b2":0.06,"niacin":0.1,"b6":0.05,"folat":11.0,"b12":0.0,"panto":0.1,"vitC":40.0,"ca":36.0,"mg":13.0,"p":30.0,"k":280.0,"fe":1.2,"zn":0.2,"jod":1.0,"na":3.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.6,"cu":0.107,"mn":0.186,"om3":0.0}},{"n":"Johannisbeere, schwarz, roh","g":"Früchte","p":1.3,"f":0.3,"c":9.0,"b":7.0,"m":{"vitA":2.0,"vitD":0.0,"vitE":1.0,"b1":0.02,"b2":0.06,"niacin":0.3,"b6":0.08,"folat":40.0,"b12":0.0,"panto":0.4,"vitC":200.0,"ca":60.0,"mg":17.0,"p":34.0,"k":370.0,"fe":1.3,"zn":0.3,"jod":1.0,"na":3.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"cu":0.086,"mn":0.256}},{"n":"Kaki, roh","g":"Früchte","p":0.7,"f":0.2,"c":15.3,"b":2.5,"m":{"vitA":34.0,"vitD":0.0,"vitE":0.8,"b1":0.03,"b2":0.06,"niacin":0.3,"b6":0.1,"folat":11.0,"b12":0.0,"panto":0.2,"vitC":7.0,"ca":21.0,"mg":9.0,"p":20.0,"k":170.0,"fe":0.4,"zn":0.1,"jod":1.0,"na":2.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.6,"cu":0.113,"mn":0.355,"om3":0.0,"eaa":0.21}},{"n":"Kirsche, roh","g":"Früchte","p":1.3,"f":0.5,"c":15.3,"b":1.7,"m":{"vitA":3.0,"vitD":0.0,"vitE":0.1,"b1":0.05,"b2":0.07,"niacin":0.4,"b6":0.05,"folat":34.0,"b12":0.0,"panto":0.2,"vitC":6.0,"ca":17.0,"mg":13.0,"p":17.0,"k":250.0,"fe":0.4,"zn":0.1,"jod":1.0,"na":3.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.0,"cu":0.06,"mn":0.07,"om3":0.0,"eaa":0.19}},{"n":"Kiwi, roh","g":"Früchte","p":1.1,"f":0.6,"c":9.9,"b":2.5,"m":{"vitA":1.0,"vitD":0.0,"vitE":0.5,"b1":0.01,"b2":0.04,"niacin":0.4,"b6":0.13,"folat":37.0,"b12":0.0,"panto":0.2,"vitC":80.0,"ca":27.0,"mg":17.0,"p":37.0,"k":290.0,"fe":0.4,"zn":0.4,"jod":1.0,"na":4.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.2,"cu":0.13,"mn":0.098,"om3":0.0,"eaa":0.39}},{"n":"Mandarine, roh","g":"Früchte","p":0.7,"f":0.2,"c":10.0,"b":1.4,"m":{"vitA":16.0,"vitD":0.0,"vitE":0.55,"b1":0.08,"b2":0.04,"niacin":0.3,"b6":0.04,"folat":26.0,"b12":0.0,"panto":0.2,"vitC":41.0,"ca":33.0,"mg":11.0,"p":15.0,"k":140.0,"fe":0.4,"zn":0.1,"jod":0.8,"na":3.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.1,"cu":0.042,"mn":0.039,"om3":0.0,"eaa":0.15}},{"n":"Mango, roh","g":"Früchte","p":0.6,"f":0.2,"c":13.4,"b":2.3,"m":{"vitA":195.0,"vitD":0.0,"vitE":1.8,"b1":0.03,"b2":0.05,"niacin":0.4,"b6":0.08,"folat":51.0,"b12":0.0,"panto":0.2,"vitC":44.0,"ca":20.0,"mg":9.0,"p":22.0,"k":150.0,"fe":1.2,"zn":0.1,"jod":1.0,"na":2.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.6,"cu":0.111,"mn":0.063,"om3":0.0,"eaa":0.28}},{"n":"Mirabelle, roh","g":"Früchte","p":0.7,"f":0.2,"c":12.0,"b":2.3,"m":{"vitA":21.0,"vitD":0.0,"vitE":0.5,"b1":0.06,"b2":0.04,"niacin":0.5,"b6":0.05,"folat":10.0,"b12":0.0,"panto":0.2,"vitC":7.0,"ca":12.0,"mg":15.0,"p":33.0,"k":230.0,"fe":0.5,"zn":0.1,"jod":1.0,"na":0.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.0,"cu":0.057,"mn":0.052,"om3":0.0,"eaa":0.11}},{"n":"Nektarine, roh","g":"Früchte","p":0.9,"f":0.2,"c":10.2,"b":2.2,"m":{"vitA":42.0,"vitD":0.0,"vitE":0.5,"b1":0.02,"b2":0.05,"niacin":1.0,"b6":0.03,"folat":9.0,"b12":0.0,"panto":0.2,"vitC":20.0,"ca":7.0,"mg":10.0,"p":18.0,"k":210.0,"fe":0.2,"zn":0.1,"jod":1.0,"na":4.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.0,"cu":0.086,"mn":0.054,"om3":0.0,"eaa":0.1}},{"n":"Orange, roh","g":"Früchte","p":1.0,"f":0.2,"c":8.6,"b":1.8,"m":{"vitA":11.0,"vitD":0.0,"vitE":0.24,"b1":0.09,"b2":0.04,"niacin":0.3,"b6":0.06,"folat":30.0,"b12":0.0,"panto":0.3,"vitC":53.0,"ca":40.0,"mg":10.0,"p":16.0,"k":180.0,"fe":0.1,"zn":0.1,"jod":0.9,"na":4.0,"bor":0.25,"mol":3,"chr":1,"sil":1.5,"se":0.5,"cu":0.045,"mn":0.025,"om3":0.0,"eaa":0.23}},{"n":"Passionsfrucht, roh","g":"Früchte","p":2.2,"f":0.5,"c":11.8,"b":10.6,"m":{"vitA":14.0,"vitD":0.0,"vitE":0.4,"b1":0.0,"b2":0.13,"niacin":1.5,"b6":0.4,"folat":14.0,"b12":0.0,"panto":0.2,"vitC":30.0,"ca":9.0,"mg":29.0,"p":68.0,"k":350.0,"fe":1.6,"zn":0.2,"jod":1.3,"na":28.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.6,"cu":0.086,"om3":0.0}},{"n":"Pfirsich, roh","g":"Früchte","p":0.5,"f":0.2,"c":10.0,"b":2.0,"m":{"vitA":9.0,"vitD":0.0,"vitE":0.5,"b1":0.02,"b2":0.05,"niacin":1.0,"b6":0.02,"folat":16.0,"b12":0.0,"panto":0.2,"vitC":7.3,"ca":10.0,"mg":8.0,"p":19.0,"k":160.0,"fe":0.4,"zn":0.1,"jod":2.9,"na":1.0,"bor":0.52,"mol":3,"chr":1,"sil":1.5,"se":0.1,"cu":0.068,"mn":0.061,"om3":0.0,"eaa":0.16}},{"n":"Pflaume, getrocknet","g":"Früchte","p":2.5,"f":0.3,"c":39.8,"b":16.0,"m":{"vitA":77.0,"vitD":0.0,"vitE":2.3,"b1":0.1,"b2":0.2,"niacin":1.7,"b6":0.13,"folat":7.1,"b12":0.0,"panto":0.5,"vitC":2.0,"ca":50.0,"mg":40.0,"p":95.0,"k":950.0,"fe":2.9,"zn":0.3,"jod":0.8,"na":12.0,"bor":1.18,"mol":3,"chr":1,"sil":1.5,"se":0.3,"cu":0.281,"mn":0.299,"om3":0.0,"eaa":0.38}},{"n":"Pflaume, roh","g":"Früchte","p":0.6,"f":0.2,"c":10.2,"b":1.6,"m":{"vitA":8.0,"vitD":0.0,"vitE":0.86,"b1":0.07,"b2":0.04,"niacin":0.44,"b6":0.04,"folat":2.0,"b12":0.0,"panto":0.18,"vitC":5.4,"ca":8.3,"mg":7.9,"p":17.0,"k":180.0,"fe":0.3,"zn":0.1,"jod":1.4,"na":1.7,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.0,"cu":0.057,"mn":0.052,"om3":0.0,"eaa":0.11}},{"n":"Preiselbeere, roh","g":"Früchte","p":0.3,"f":0.5,"c":7.1,"b":2.9,"m":{"vitA":1.0,"vitD":0.0,"vitE":0.99,"b1":0.02,"b2":0.02,"niacin":0.1,"b6":0.01,"folat":3.0,"b12":0.0,"panto":0.12,"vitC":12.0,"ca":14.0,"mg":6.0,"p":10.0,"k":70.0,"fe":0.5,"zn":0.2,"jod":5.0,"na":2.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.1,"cu":0.056,"mn":0.267,"om3":0.0,"eaa":0.26}},{"n":"Quitte, roh","g":"Früchte","p":0.3,"f":0.2,"c":6.3,"b":6.4,"m":{"vitA":2.0,"vitD":0.0,"vitE":0.4,"b1":0.02,"b2":0.02,"niacin":0.2,"b6":0.04,"folat":8.0,"b12":0.0,"panto":0.1,"vitC":15.0,"ca":14.0,"mg":6.0,"p":19.0,"k":200.0,"fe":0.3,"zn":0.2,"jod":1.0,"na":3.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.6,"cu":0.13,"om3":0.0}},{"n":"Rhabarber, roh","g":"Früchte","p":0.6,"f":0.1,"c":1.0,"b":2.5,"m":{"vitA":5.0,"vitD":0.0,"vitE":0.2,"b1":0.03,"b2":0.03,"niacin":0.3,"b6":0.03,"folat":8.0,"b12":0.0,"panto":0.1,"vitC":12.0,"ca":86.0,"mg":13.0,"p":19.0,"k":290.0,"fe":0.3,"zn":0.2,"jod":2.3,"na":3.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":1.1,"cu":0.021,"mn":0.196,"om3":0.0}},{"n":"Rosine, getrocknet","g":"Früchte","p":2.5,"f":0.6,"c":68.0,"b":5.2,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.0,"b1":0.12,"b2":0.06,"niacin":0.5,"b6":0.11,"folat":4.0,"b12":0.0,"panto":0.1,"vitC":1.0,"ca":80.0,"mg":41.0,"p":110.0,"k":780.0,"fe":2.3,"zn":0.2,"jod":2.0,"na":21.0,"bor":4.51,"mol":3,"chr":1,"sil":1.5,"se":0.6,"cu":0.272,"mn":0.281,"om3":0.0}},{"n":"Stachelbeere, roh","g":"Früchte","p":0.6,"f":0.1,"c":6.2,"b":3.2,"m":{"vitA":7.0,"vitD":0.0,"vitE":0.4,"b1":0.04,"b2":0.03,"niacin":0.3,"b6":0.02,"folat":19.0,"b12":0.0,"panto":0.2,"vitC":40.0,"ca":20.0,"mg":9.0,"p":34.0,"k":210.0,"fe":0.6,"zn":0.2,"jod":0.9,"na":1.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.6,"cu":0.07,"mn":0.144,"om3":0.0}},{"n":"Traube, roh","g":"Früchte","p":0.7,"f":0.3,"c":15.2,"b":1.5,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.67,"b1":0.05,"b2":0.02,"niacin":0.23,"b6":0.07,"folat":43.0,"b12":0.0,"panto":0.06,"vitC":4.2,"ca":12.0,"mg":7.6,"p":19.0,"k":200.0,"fe":0.4,"zn":0.1,"jod":1.0,"na":2.0,"bor":0.5,"mol":3,"chr":1,"sil":1.5,"se":0.1,"cu":0.127,"mn":0.071,"om3":0.0,"eaa":0.16}},{"n":"Wassermelone, roh","g":"Früchte","p":0.5,"f":0.3,"c":6.3,"b":0.3,"m":{"vitA":9.0,"vitD":0.0,"vitE":0.1,"b1":0.03,"b2":0.02,"niacin":0.2,"b6":0.1,"folat":4.0,"b12":0.0,"panto":0.2,"vitC":11.0,"ca":7.0,"mg":10.0,"p":9.0,"k":110.0,"fe":0.2,"zn":0.1,"jod":10.0,"na":2.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.4,"cu":0.042,"mn":0.038,"om3":0.0,"eaa":0.18}},{"n":"Zitrone, roh","g":"Früchte","p":0.8,"f":0.4,"c":2.9,"b":2.0,"m":{"vitA":1.0,"vitD":0.0,"vitE":0.8,"b1":0.05,"b2":0.02,"niacin":0.2,"b6":0.07,"folat":9.0,"b12":0.0,"panto":0.2,"vitC":52.0,"ca":25.0,"mg":16.0,"p":18.0,"k":150.0,"fe":0.5,"zn":0.1,"jod":1.5,"na":4.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.4,"cu":0.037,"mn":0.03,"om3":0.0}},{"n":"Zwetschge, roh","g":"Früchte","p":0.6,"f":0.1,"c":8.8,"b":2.3,"m":{"vitA":11.0,"vitD":0.0,"vitE":0.61,"b1":0.05,"b2":0.03,"niacin":0.4,"b6":0.05,"folat":3.0,"b12":0.0,"panto":0.15,"vitC":4.0,"ca":13.0,"mg":8.0,"p":23.0,"k":240.0,"fe":0.4,"zn":0.1,"jod":0.1,"na":2.0,"bor":0.35,"mol":3,"chr":1,"sil":1.5,"se":0.0,"cu":0.057,"mn":0.052,"om3":0.0,"eaa":0.11}},{"n":"Bohne (alle Arten), gekocht","g":"Hülsenfrüchte","p":7.8,"f":0.6,"c":15.2,"b":8.5,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.05,"b1":0.08,"b2":0.02,"niacin":0.83,"b6":0.07,"folat":77.0,"b12":0.0,"panto":0.08,"vitC":0.6,"ca":46.0,"mg":52.0,"p":150.0,"k":420.0,"fe":2.0,"zn":1.1,"jod":0.4,"na":1.0,"se":1.1,"cu":0.216,"mn":0.43,"om3":0.0,"eaa":3.54,"bor":1.0,"mol":100,"chr":5,"sil":3}},{"n":"Bohne (alle Arten), getrocknet","g":"Hülsenfrüchte","p":20.9,"f":1.5,"c":40.7,"b":22.6,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.15,"b1":0.34,"b2":0.08,"niacin":3.4,"b6":0.25,"folat":410.0,"b12":0.0,"panto":0.39,"vitC":2.7,"ca":130.0,"mg":160.0,"p":440.0,"k":1510.0,"fe":6.4,"zn":3.2,"jod":1.1,"na":1.3,"se":3.2,"cu":0.958,"mn":1.021,"om3":0.0,"eaa":9.33,"bor":1.4,"mol":250,"chr":5,"sil":3}},{"n":"Erbse, reif, gekocht","g":"Hülsenfrüchte","p":9.1,"f":0.7,"c":22.3,"b":5.0,"m":{"vitA":4.0,"vitD":0.0,"vitE":0.05,"b1":0.22,"b2":0.07,"niacin":0.84,"b6":0.04,"folat":43.0,"b12":0.0,"panto":0.35,"vitC":1.0,"ca":18.0,"mg":36.0,"p":140.0,"k":340.0,"fe":1.6,"zn":1.2,"jod":0.6,"na":2.7,"se":0.6,"cu":0.181,"mn":0.396,"om3":0.0,"eaa":3.0,"bor":1.0,"mol":100,"chr":5,"sil":3}},{"n":"Erbse, reif, getrocknet","g":"Hülsenfrüchte","p":21.3,"f":1.7,"c":51.9,"b":11.6,"m":{"vitA":10.0,"vitD":0.0,"vitE":0.13,"b1":0.79,"b2":0.21,"niacin":3.0,"b6":0.12,"folat":200.0,"b12":0.0,"panto":1.5,"vitC":3.9,"ca":39.0,"mg":96.0,"p":360.0,"k":1060.0,"fe":4.3,"zn":3.1,"jod":1.3,"na":6.6,"se":10.7,"cu":0.809,"mn":1.19,"om3":0.0,"eaa":8.37,"bor":1.0,"mol":250,"chr":5,"sil":3}},{"n":"Hülsenfrüchte (Durchschnitt), getrocknet","g":"Hülsenfrüchte","p":25.1,"f":4.9,"c":39.3,"b":16.5,"m":{"vitA":10.0,"vitD":0.0,"vitE":0.71,"b1":0.64,"b2":0.2,"niacin":2.6,"b6":0.38,"folat":240.0,"b12":0.0,"panto":1.1,"vitC":9.5,"ca":97.0,"mg":130.0,"p":420.0,"k":1200.0,"fe":6.1,"zn":3.3,"jod":1.8,"na":4.0,"se":3.2,"cu":0.958,"mn":1.021,"om3":0.0,"eaa":9.33,"bor":1.0,"mol":250,"chr":5,"sil":3}},{"n":"Kichererbse, gekocht","g":"Hülsenfrüchte","p":7.4,"f":2.0,"c":17.7,"b":6.2,"m":{"vitA":5.0,"vitD":0.0,"vitE":0.68,"b1":0.13,"b2":0.04,"niacin":0.42,"b6":0.15,"folat":68.0,"b12":0.0,"panto":0.29,"vitC":1.2,"ca":45.0,"mg":48.0,"p":140.0,"k":320.0,"fe":1.8,"zn":0.9,"jod":0.2,"na":3.2,"se":3.7,"cu":0.352,"mn":1.03,"om3":0.0,"eaa":3.23,"bor":1.0,"mol":100,"chr":5,"sil":3}},{"n":"Kichererbse, getrocknet","g":"Hülsenfrüchte","p":18.6,"f":4.9,"c":44.3,"b":15.5,"m":{"vitA":13.0,"vitD":0.0,"vitE":1.9,"b1":0.52,"b2":0.13,"niacin":1.7,"b6":0.33,"folat":340.0,"b12":0.0,"panto":1.1,"vitC":5.1,"ca":120.0,"mg":140.0,"p":380.0,"k":1090.0,"fe":5.5,"zn":2.4,"jod":0.6,"na":8.1,"se":0.0,"cu":0.656,"mn":4.15,"om3":0.0,"eaa":7.49,"bor":0.71,"mol":250,"chr":5,"sil":3}},{"n":"Linse, ganz, gekocht","g":"Hülsenfrüchte","p":8.8,"f":0.4,"c":18.5,"b":4.1,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.0,"b1":0.12,"b2":0.07,"niacin":0.52,"b6":0.15,"folat":37.0,"b12":0.0,"panto":0.3,"vitC":0.0,"ca":20.0,"mg":30.0,"p":130.0,"k":240.0,"fe":2.2,"zn":1.2,"jod":0.3,"na":1.3,"se":2.8,"cu":0.251,"mn":0.494,"om3":0.0,"eaa":3.3,"bor":1.0,"mol":100,"chr":5,"sil":3}},{"n":"Linse, ganz, getrocknet","g":"Hülsenfrüchte","p":24.4,"f":1.5,"c":44.8,"b":17.0,"m":{"vitA":2.0,"vitD":0.0,"vitE":0.29,"b1":0.53,"b2":0.13,"niacin":2.5,"b6":0.23,"folat":150.0,"b12":0.0,"panto":1.4,"vitC":6.8,"ca":57.0,"mg":96.0,"p":400.0,"k":860.0,"fe":8.0,"zn":3.6,"jod":0.7,"na":1.7,"se":0.1,"cu":0.754,"mn":1.393,"om3":0.0,"eaa":9.02,"bor":0.74,"mol":250,"chr":5,"sil":3}},{"n":"Linse, geschält, getrocknet","g":"Hülsenfrüchte","p":27.0,"f":1.5,"c":48.0,"b":10.4,"m":{"vitA":3.0,"vitD":0.0,"vitE":0.29,"b1":0.68,"b2":0.18,"niacin":2.2,"b6":0.32,"folat":88.0,"b12":0.0,"panto":0.74,"vitC":4.7,"ca":33.0,"mg":83.0,"p":390.0,"k":900.0,"fe":5.6,"zn":3.0,"jod":0.7,"na":1.4,"se":0.1,"cu":0.754,"mn":1.393,"om3":0.0,"eaa":9.02,"bor":0.74,"mol":250,"chr":5,"sil":3}},{"n":"Sojabohne, gekocht","g":"Hülsenfrüchte","p":14.0,"f":7.0,"c":11.7,"b":3.6,"m":{"vitA":20.0,"vitD":0.0,"vitE":0.29,"b1":0.25,"b2":0.1,"niacin":0.99,"b6":0.13,"folat":13.0,"b12":0.0,"panto":0.16,"vitC":8.2,"ca":120.0,"mg":23.0,"p":190.0,"k":190.0,"fe":2.6,"zn":0.3,"jod":3.6,"na":2.4,"se":7.3,"cu":0.407,"mn":0.824,"om3":0.0,"eaa":6.61,"bor":1.0,"mol":100,"chr":5,"sil":3}},{"n":"Sojabohne, getrocknet","g":"Hülsenfrüchte","p":38.2,"f":18.3,"c":6.3,"b":22.0,"m":{"vitA":32.0,"vitD":0.0,"vitE":1.5,"b1":1.0,"b2":0.46,"niacin":2.7,"b6":1.0,"folat":250.0,"b12":0.0,"panto":1.7,"vitC":34.0,"ca":200.0,"mg":220.0,"p":550.0,"k":1800.0,"fe":6.6,"zn":4.2,"jod":6.3,"na":4.7,"se":17.8,"cu":1.658,"mn":2.517,"eaa":16.14,"bor":1.64,"mol":250,"chr":5,"sil":3}},{"n":"Baumnussbrot","g":"Getreide, Kartoffeln & Brot","p":8.9,"f":18.6,"c":30.9,"b":5.5,"m":{"vitA":48.0,"vitD":0.2,"vitE":6.3,"b1":0.21,"b2":0.12,"niacin":2.2,"b6":0.23,"folat":49.0,"b12":0.22,"panto":0.54,"vitC":0.4,"ca":32.0,"mg":67.0,"p":210.0,"k":240.0,"fe":2.2,"zn":2.0,"jod":2.9,"na":480.0,"se":25.7,"cu":0.227,"mn":2.174,"om3":0.0,"bor":0.25,"mol":40,"chr":7,"sil":10}},{"n":"Buchweizen, Korn geschält","g":"Getreide, Kartoffeln & Brot","p":9.1,"f":1.7,"c":71.0,"b":3.7,"m":{"vitA":1.0,"vitD":0.0,"vitE":0.84,"b1":0.37,"b2":0.15,"niacin":2.9,"b6":0.36,"folat":50.0,"b12":0.0,"panto":1.2,"vitC":0.0,"ca":20.0,"mg":140.0,"p":290.0,"k":390.0,"fe":3.5,"zn":2.7,"jod":0.5,"na":2.0,"se":8.3,"cu":1.1,"mn":1.3,"om3":0.0,"eaa":4.38,"bor":0.25,"mol":40,"chr":7,"sil":10}},{"n":"Buchweizenmehl","g":"Getreide, Kartoffeln & Brot","p":12.0,"f":2.8,"c":64.5,"b":6.2,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.0,"b1":0.56,"b2":0.17,"niacin":4.0,"b6":0.4,"folat":54.0,"b12":0.0,"panto":1.3,"vitC":0.0,"ca":9.0,"mg":150.0,"p":320.0,"k":600.0,"fe":3.0,"zn":2.6,"jod":0.2,"na":6.0,"se":5.7,"cu":0.515,"mn":2.03,"om3":0.0,"eaa":4.17,"bor":0.83,"mol":40,"chr":7,"sil":10}},{"n":"Dinkelmehl, Vollkorn, Typ 1900","g":"Getreide, Kartoffeln & Brot","p":15.6,"f":2.7,"c":60.0,"b":9.4,"m":{"vitE":1.4,"b1":0.46,"b2":0.09,"b6":0.2,"panto":0.68,"ca":35.0,"mg":140.0,"p":450.0,"k":390.0,"fe":3.6,"zn":4.5,"na":13.0,"se":11.7,"cu":0.511,"mn":2.983,"eaa":4.64,"bor":0.25,"mol":40,"chr":7,"sil":10}},{"n":"Gerstenflocken, Vollkorn","g":"Getreide, Kartoffeln & Brot","p":7.9,"f":1.5,"c":66.1,"b":10.3,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.64,"b1":0.2,"b2":0.08,"niacin":3.1,"b6":0.29,"folat":19.0,"b12":0.0,"panto":0.49,"vitC":0.0,"ca":16.0,"mg":66.0,"p":190.0,"k":160.0,"fe":2.0,"zn":1.3,"jod":1.0,"na":3.0,"se":37.7,"cu":0.498,"mn":1.943,"om3":0.0,"eaa":4.23,"bor":0.25,"mol":40,"chr":7,"sil":9}},{"n":"Getreideflocken (Durchschnitt)","g":"Getreide, Kartoffeln & Brot","p":10.2,"f":3.3,"c":63.9,"b":9.0,"m":{"vitA":1.0,"vitD":0.0,"vitE":0.77,"b1":0.34,"b2":0.1,"niacin":2.8,"b6":0.38,"folat":31.0,"b12":0.0,"panto":0.94,"vitC":0.0,"ca":29.0,"mg":110.0,"p":290.0,"k":230.0,"fe":4.0,"zn":2.0,"jod":1.5,"na":7.4,"se":28.9,"cu":0.391,"mn":3.63,"om3":0.0,"eaa":4.52,"bor":0.25,"mol":40,"chr":7,"sil":10}},{"n":"Haferflocken","g":"Getreide, Kartoffeln & Brot","p":13.5,"f":7.5,"c":57.5,"b":10.5,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.75,"b1":0.41,"b2":0.13,"niacin":0.8,"b6":0.11,"folat":47.0,"b12":0.0,"panto":0.9,"vitC":0.0,"ca":53.0,"mg":120.0,"p":410.0,"k":400.0,"fe":3.8,"zn":3.0,"jod":0.5,"na":20.0,"se":28.9,"cu":0.391,"mn":3.63,"om3":0.0,"eaa":4.52,"bor":0.25,"mol":40,"chr":7,"sil":10}},{"n":"Haferkleie","g":"Getreide, Kartoffeln & Brot","p":17.3,"f":7.0,"c":50.8,"b":15.4,"m":{"vitA":0.0,"vitD":0.0,"vitE":1.7,"b1":0.85,"b2":0.22,"niacin":0.93,"b6":0.36,"folat":52.0,"b12":0.0,"panto":1.2,"vitC":0.0,"ca":58.0,"mg":240.0,"p":730.0,"k":570.0,"fe":5.4,"zn":3.1,"jod":0.0,"na":4.0,"se":45.2,"cu":0.403,"mn":5.63,"om3":0.0,"eaa":6.26,"bor":0.25,"mol":40,"chr":7,"sil":23.4}},{"n":"Hirse, Korn geschält","g":"Getreide, Kartoffeln & Brot","p":9.8,"f":3.9,"c":68.8,"b":3.8,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.41,"b1":0.36,"b2":0.11,"niacin":1.8,"b6":0.37,"folat":20.0,"b12":0.0,"panto":0.54,"vitC":0.0,"ca":9.5,"mg":120.0,"p":280.0,"k":170.0,"fe":6.9,"zn":2.9,"jod":2.5,"na":3.0,"se":2.7,"cu":0.75,"mn":1.632,"eaa":4.16,"bor":0.25,"mol":40,"chr":7,"sil":10}},{"n":"Hirseflocken, Vollkorn","g":"Getreide, Kartoffeln & Brot","p":9.8,"f":3.9,"c":68.8,"b":3.8,"m":{"vitA":1.0,"vitD":0.0,"vitE":0.41,"b1":0.33,"b2":0.11,"niacin":1.8,"b6":0.53,"folat":20.0,"b12":0.0,"panto":0.71,"vitC":0.0,"ca":20.0,"mg":170.0,"p":310.0,"k":170.0,"fe":9.0,"zn":1.8,"jod":2.5,"na":3.0,"se":2.7,"cu":0.75,"mn":1.632,"eaa":4.16,"bor":0.25,"mol":40,"chr":7,"sil":10}},{"n":"Kartoffel, geschält, gedämpft","g":"Getreide, Kartoffeln & Brot","p":2.0,"f":0.1,"c":15.9,"b":2.1,"m":{"vitA":1.0,"vitD":0.0,"vitE":0.06,"b1":0.1,"b2":0.05,"niacin":1.1,"b6":0.29,"folat":17.0,"b12":0.0,"panto":0.33,"vitC":13.9,"ca":5.8,"mg":18.0,"p":46.0,"k":350.0,"fe":0.4,"zn":0.3,"jod":3.9,"na":2.8,"se":0.3,"cu":0.167,"mn":0.14,"om3":0.0,"eaa":0.6,"bor":0.25,"mol":40,"chr":7,"sil":10}},{"n":"Kartoffel, geschält, roh","g":"Getreide, Kartoffeln & Brot","p":2.0,"f":0.1,"c":15.6,"b":2.1,"m":{"vitA":1.0,"vitD":0.0,"vitE":0.06,"b1":0.12,"b2":0.05,"niacin":1.2,"b6":0.33,"folat":28.0,"b12":0.0,"panto":0.38,"vitC":17.0,"ca":6.0,"mg":19.0,"p":48.0,"k":400.0,"fe":0.4,"zn":0.3,"jod":4.0,"na":3.0,"se":0.4,"cu":0.11,"mn":0.153,"om3":0.0,"eaa":0.61,"bor":0.18,"mol":5,"chr":7,"sil":2}},{"n":"Reis parboiled, trocken","g":"Getreide, Kartoffeln & Brot","p":6.9,"f":0.6,"c":78.2,"b":1.4,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.07,"b1":0.26,"b2":0.06,"niacin":3.4,"b6":0.2,"folat":19.0,"b12":0.0,"panto":0.86,"vitC":0.0,"ca":54.0,"mg":34.0,"p":170.0,"k":150.0,"fe":0.5,"zn":2.0,"jod":2.0,"na":3.0,"se":19.9,"cu":0.284,"mn":1.035,"om3":0.0,"eaa":2.82,"bor":0.25,"mol":40,"chr":7,"sil":10}},{"n":"Reis unpoliert, trocken","g":"Getreide, Kartoffeln & Brot","p":7.5,"f":2.8,"c":73.9,"b":3.0,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.6,"b1":0.41,"b2":0.08,"niacin":4.8,"b6":0.33,"folat":40.0,"b12":0.0,"panto":1.2,"vitC":0.0,"ca":21.0,"mg":140.0,"p":300.0,"k":220.0,"fe":1.7,"zn":1.6,"jod":2.2,"na":6.0,"se":17.1,"cu":0.302,"mn":2.853,"om3":0.0,"eaa":2.94,"bor":0.25,"mol":40,"chr":7,"sil":3}},{"n":"Roggenbrot mit Sauerteig","g":"Getreide, Kartoffeln & Brot","p":5.2,"f":1.0,"c":41.8,"b":6.3,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.9,"b1":0.13,"b2":0.08,"niacin":0.94,"b6":0.17,"folat":23.0,"b12":0.0,"panto":0.45,"vitC":0.0,"ca":18.0,"mg":48.0,"p":190.0,"k":240.0,"fe":2.2,"zn":2.0,"jod":2.7,"na":530.0,"se":30.9,"cu":0.186,"mn":0.824,"om3":0.0,"eaa":2.59,"bor":0.25,"mol":40,"chr":7,"sil":10}},{"n":"Roggenmehl, Vollkorn, Schrot, Typ 1800","g":"Getreide, Kartoffeln & Brot","p":8.5,"f":1.7,"c":63.3,"b":11.2,"m":{"vitA":0.0,"vitD":0.0,"vitE":1.6,"b1":0.3,"b2":0.14,"niacin":1.9,"b6":0.3,"folat":78.0,"b12":0.0,"panto":1.0,"vitC":0.0,"ca":23.0,"mg":83.0,"p":360.0,"k":440.0,"fe":4.0,"zn":3.7,"jod":4.6,"na":2.0,"se":18.0,"cu":0.56,"mn":6.062,"om3":0.0,"eaa":3.79,"bor":0.25,"mol":40,"chr":7,"sil":10}},{"n":"Roggenschrotbrot","g":"Getreide, Kartoffeln & Brot","p":6.2,"f":1.2,"c":44.3,"b":7.5,"m":{"vitA":0.0,"vitD":0.0,"vitE":1.1,"b1":0.16,"b2":0.09,"niacin":1.3,"b6":0.19,"folat":26.0,"b12":0.0,"panto":0.51,"vitC":0.0,"ca":19.0,"mg":57.0,"p":240.0,"k":300.0,"fe":2.7,"zn":2.5,"jod":3.3,"na":570.0,"se":24.5,"cu":0.287,"mn":1.305,"om3":0.0,"eaa":2.72,"bor":0.25,"mol":40,"chr":7,"sil":10}},{"n":"Rollgerste","g":"Getreide, Kartoffeln & Brot","p":9.6,"f":1.4,"c":71.0,"b":4.6,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.2,"b1":0.21,"b2":0.08,"niacin":3.1,"b6":0.24,"folat":20.0,"b12":0.0,"panto":0.28,"vitC":0.0,"ca":18.0,"mg":65.0,"p":200.0,"k":250.0,"fe":2.8,"zn":2.1,"jod":1.0,"na":5.0,"se":37.7,"cu":0.42,"mn":1.322,"om3":0.0,"eaa":3.36,"bor":0.25,"mol":40,"chr":7,"sil":9}},{"n":"Ruchbrot","g":"Getreide, Kartoffeln & Brot","p":9.5,"f":1.2,"c":44.3,"b":4.1,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.4,"b1":0.24,"b2":0.07,"niacin":2.4,"b6":0.17,"folat":20.0,"b12":0.0,"panto":0.39,"vitC":0.0,"ca":15.0,"mg":38.0,"p":160.0,"k":170.0,"fe":2.1,"zn":1.6,"jod":1.4,"na":630.0,"se":28.8,"cu":0.148,"mn":1.026,"om3":4.0,"bor":0.25,"mol":40,"chr":7,"sil":10}},{"n":"Sojamehl, vollfett","g":"Getreide, Kartoffeln & Brot","p":40.8,"f":20.6,"c":3.1,"b":18.5,"m":{"vitA":6.0,"vitD":0.0,"vitE":1.5,"b1":0.77,"b2":0.28,"niacin":2.2,"b6":0.51,"folat":190.0,"b12":0.0,"panto":1.8,"vitC":0.0,"ca":200.0,"mg":250.0,"p":550.0,"k":1870.0,"fe":12.0,"zn":4.9,"jod":0.5,"na":40.0,"se":7.5,"cu":2.92,"mn":2.275,"om3":0.0,"eaa":13.71,"bor":0.25,"mol":40,"chr":7,"sil":10}},{"n":"Teigwaren mit Ei, trocken","g":"Getreide, Kartoffeln & Brot","p":13.3,"f":2.8,"c":69.9,"b":3.4,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.21,"b1":0.17,"b2":0.07,"niacin":1.9,"b6":0.06,"folat":22.0,"b12":0.0,"panto":0.3,"vitC":0.0,"ca":23.0,"mg":42.0,"p":150.0,"k":220.0,"fe":3.0,"zn":1.3,"jod":3.3,"na":17.0,"se":78.8,"cu":0.297,"mn":0.855,"om3":0.0,"eaa":4.8,"bor":0.25,"mol":40,"chr":7,"sil":10}},{"n":"Teigwaren ohne Ei, Vollkorn, trocken","g":"Getreide, Kartoffeln & Brot","p":13.4,"f":2.5,"c":60.6,"b":11.5,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.25,"b1":0.67,"b2":0.11,"niacin":3.1,"b6":0.2,"folat":40.0,"b12":0.0,"panto":0.8,"vitC":0.0,"ca":34.0,"mg":120.0,"p":370.0,"k":390.0,"fe":3.9,"zn":3.0,"jod":2.0,"na":5.0,"se":77.6,"cu":0.497,"mn":2.983,"om3":0.0,"bor":0.25,"mol":40,"chr":7,"sil":10}},{"n":"Teigwaren ohne Ei, trocken","g":"Getreide, Kartoffeln & Brot","p":12.5,"f":1.2,"c":70.5,"b":5.1,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.2,"b1":0.09,"b2":0.06,"niacin":2.0,"b6":0.17,"folat":31.0,"b12":0.0,"panto":0.3,"vitC":0.0,"ca":22.0,"mg":56.0,"p":160.0,"k":200.0,"fe":1.5,"zn":1.5,"jod":1.0,"na":5.0,"se":63.2,"cu":0.289,"mn":0.917,"om3":0.0,"eaa":4.14,"bor":0.25,"mol":40,"chr":7,"sil":10}},{"n":"Walliser Roggenbrot","g":"Getreide, Kartoffeln & Brot","p":6.3,"f":1.1,"c":42.7,"b":7.0,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.97,"b1":0.16,"b2":0.11,"niacin":1.5,"b6":0.19,"folat":35.0,"b12":0.0,"panto":0.51,"vitC":0.0,"ca":19.0,"mg":52.0,"p":230.0,"k":280.0,"fe":2.5,"zn":2.3,"jod":3.1,"na":570.0,"se":30.9,"cu":0.186,"mn":0.824,"om3":0.0,"eaa":2.59,"bor":0.25,"mol":40,"chr":7,"sil":10}},{"n":"Weizen (Weichweizen), ganzes Korn","g":"Getreide, Kartoffeln & Brot","p":10.9,"f":1.8,"c":59.6,"b":13.3,"m":{"vitA":2.0,"vitD":0.0,"vitE":4.1,"b1":0.46,"b2":0.09,"niacin":5.1,"b6":0.27,"folat":87.0,"b12":0.0,"panto":1.2,"vitC":0.0,"ca":33.0,"mg":97.0,"p":340.0,"k":380.0,"fe":3.2,"zn":2.6,"jod":6.7,"na":7.7,"cu":0.426,"mn":3.406,"om3":0.0,"bor":0.25,"mol":40,"chr":7,"sil":10}},{"n":"Weizenflocken, Vollkorn","g":"Getreide, Kartoffeln & Brot","p":11.7,"f":2.0,"c":61.0,"b":10.3,"m":{"vitA":2.0,"vitD":0.0,"vitE":1.4,"b1":0.46,"b2":0.11,"niacin":5.1,"b6":0.44,"folat":49.0,"b12":0.0,"panto":1.2,"vitC":0.0,"ca":38.0,"mg":130.0,"p":340.0,"k":380.0,"fe":3.3,"zn":2.7,"jod":2.7,"na":8.0,"cu":0.426,"mn":3.406,"om3":0.0,"bor":0.25,"mol":40,"chr":7,"sil":10}},{"n":"Weizenkleie","g":"Getreide, Kartoffeln & Brot","p":14.9,"f":4.6,"c":17.7,"b":45.1,"m":{"vitA":0.0,"vitD":0.0,"vitE":2.7,"b1":0.83,"b2":0.51,"niacin":18.0,"b6":0.54,"folat":200.0,"b12":0.0,"panto":2.3,"vitC":0.0,"ca":67.0,"mg":490.0,"p":1140.0,"k":1350.0,"fe":16.0,"zn":9.4,"jod":3.1,"na":2.0,"se":77.6,"cu":0.998,"mn":11.5,"om3":0.0,"eaa":4.78,"bor":0.32,"mol":40,"chr":7,"sil":12}},{"n":"Weizenmehl, Vollkorn, Typ 1700","g":"Getreide, Kartoffeln & Brot","p":13.5,"f":2.0,"c":61.0,"b":11.0,"m":{"vitA":0.0,"vitD":0.0,"vitE":2.0,"b1":0.44,"b2":0.16,"niacin":7.5,"b6":0.43,"folat":50.0,"b12":0.0,"panto":1.1,"vitC":0.0,"ca":37.0,"mg":130.0,"p":360.0,"k":330.0,"fe":4.0,"zn":2.7,"jod":2.5,"na":17.0,"se":61.8,"cu":0.41,"mn":4.067,"om3":0.0,"eaa":4.07,"bor":0.25,"mol":40,"chr":7,"sil":10}},{"n":"Weizenvollkornbrot","g":"Getreide, Kartoffeln & Brot","p":8.6,"f":1.3,"c":38.3,"b":6.9,"m":{"vitA":0.0,"vitD":0.0,"vitE":1.2,"b1":0.21,"b2":0.11,"niacin":4.5,"b6":0.25,"folat":22.0,"b12":0.0,"panto":0.54,"vitC":0.0,"ca":27.0,"mg":82.0,"p":230.0,"k":210.0,"fe":2.5,"zn":1.7,"jod":1.9,"na":580.0,"se":25.7,"cu":0.227,"mn":2.174,"om3":0.0,"bor":0.25,"mol":43,"chr":7,"sil":5}},{"n":"Baumnuss","g":"Nüsse & Samen","p":15.9,"f":70.8,"c":7.0,"b":6.7,"m":{"vitA":0.0,"vitD":0.0,"vitE":30.0,"b1":0.36,"b2":0.14,"niacin":1.3,"b6":0.41,"folat":140.0,"b12":0.1,"panto":0.81,"vitC":2.1,"ca":78.0,"mg":140.0,"p":360.0,"k":420.0,"fe":3.0,"zn":4.0,"jod":2.0,"na":0.3,"se":4.9,"cu":1.586,"mn":3.414,"om3":0.0,"eaa":5.08,"bor":1.63,"mol":35,"chr":5,"sil":3}},{"n":"Cashewnuss","g":"Nüsse & Samen","p":18.2,"f":45.2,"c":26.6,"b":3.6,"m":{"vitA":0.0,"vitD":0.0,"vitE":6.3,"b1":0.42,"b2":0.06,"niacin":1.1,"b6":0.42,"folat":25.0,"b12":0.0,"panto":0.86,"vitC":0.5,"ca":40.0,"mg":270.0,"p":540.0,"k":660.0,"fe":5.2,"zn":4.0,"jod":10.0,"na":9.2,"se":19.9,"cu":2.195,"mn":1.655,"om3":0.0,"eaa":7.03,"bor":1.15,"mol":35,"chr":5,"sil":3}},{"n":"Edelkastanie, roh","g":"Nüsse & Samen","p":2.9,"f":1.5,"c":42.4,"b":1.4,"m":{"vitA":5.0,"vitD":0.0,"vitE":0.5,"b1":0.24,"b2":0.11,"niacin":1.1,"b6":0.35,"folat":58.0,"b12":0.0,"panto":0.48,"vitC":33.0,"ca":18.0,"mg":31.0,"p":59.0,"k":380.0,"fe":2.1,"zn":1.0,"jod":0.1,"na":0.6,"cu":0.418,"mn":0.336,"eaa":0.58,"bor":2.0,"mol":35,"chr":5,"sil":3}},{"n":"Erdnuss","g":"Nüsse & Samen","p":26.0,"f":48.5,"c":11.2,"b":7.6,"m":{"vitA":0.0,"vitD":0.0,"vitE":5.3,"b1":1.5,"b2":0.09,"niacin":12.0,"b6":0.59,"folat":240.0,"b12":0.0,"panto":1.8,"vitC":0.0,"ca":65.0,"mg":160.0,"p":380.0,"k":700.0,"fe":6.0,"zn":4.0,"jod":3.2,"na":18.0,"se":7.2,"cu":1.144,"mn":1.934,"om3":0.0,"eaa":8.07,"bor":1.92,"mol":39,"chr":5,"sil":3}},{"n":"Haselnuss","g":"Nüsse & Samen","p":15.2,"f":59.5,"c":6.9,"b":9.7,"m":{"vitA":0.0,"vitD":0.0,"vitE":27.0,"b1":0.27,"b2":0.05,"niacin":1.3,"b6":0.5,"folat":41.0,"b12":0.0,"panto":1.2,"vitC":2.0,"ca":160.0,"mg":160.0,"p":320.0,"k":720.0,"fe":3.6,"zn":2.9,"jod":6.5,"na":0.9,"se":2.4,"cu":1.725,"mn":6.175,"om3":0.0,"eaa":4.74,"bor":2.77,"mol":35,"chr":5,"sil":3}},{"n":"Kokosnuss","g":"Nüsse & Samen","p":8.9,"f":42.0,"c":16.0,"b":9.5,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.44,"b1":0.04,"b2":0.01,"niacin":0.6,"b6":0.05,"folat":25.0,"b12":0.0,"panto":0.25,"vitC":3.0,"ca":13.0,"mg":38.0,"p":120.0,"k":15.0,"fe":0.5,"zn":0.2,"jod":0.8,"na":6.0,"se":10.1,"cu":0.435,"mn":1.5,"om3":0.0,"eaa":1.2,"bor":2.0,"mol":35,"chr":5,"sil":3}},{"n":"Kürbiskerne","g":"Nüsse & Samen","p":32.6,"f":49.1,"c":4.7,"b":6.0,"m":{"vitA":19.0,"vitD":0.0,"vitE":56.0,"b1":0.21,"b2":0.32,"niacin":1.7,"b6":0.22,"folat":58.0,"b12":0.0,"panto":0.34,"vitC":2.0,"ca":78.0,"mg":530.0,"p":1100.0,"k":950.0,"fe":9.1,"zn":8.2,"jod":12.0,"na":9.9,"se":9.4,"cu":1.343,"mn":4.543,"om3":0.0,"eaa":11.21,"bor":2.0,"mol":35,"chr":5,"sil":3}},{"n":"Leinsamen","g":"Nüsse & Samen","p":17.9,"f":33.6,"c":10.8,"b":27.3,"m":{"vitA":0.0,"vitD":0.0,"vitE":14.0,"b1":1.6,"b2":0.16,"niacin":3.1,"b6":0.47,"folat":87.0,"b12":0.0,"panto":0.99,"vitC":1.0,"ca":240.0,"mg":320.0,"p":530.0,"k":680.0,"fe":6.3,"zn":4.3,"jod":10.0,"na":40.0,"se":25.4,"cu":1.22,"mn":2.482,"om3":0.0,"eaa":6.93,"bor":2.0,"mol":35,"chr":5,"sil":3}},{"n":"Mandel","g":"Nüsse & Samen","p":21.2,"f":49.9,"c":4.0,"b":13.0,"m":{"vitA":0.0,"vitD":0.0,"vitE":12.0,"b1":0.3,"b2":0.44,"niacin":2.1,"b6":0.15,"folat":48.0,"b12":0.0,"panto":0.49,"vitC":0.0,"ca":270.0,"mg":240.0,"p":510.0,"k":760.0,"fe":4.8,"zn":6.0,"jod":2.0,"na":1.3,"se":4.1,"cu":1.031,"mn":2.179,"om3":0.0,"eaa":6.29,"bor":2.82,"mol":35,"chr":5,"sil":3}},{"n":"Olive, grün","g":"Nüsse & Samen","p":1.3,"f":12.5,"c":0.0,"b":4.0,"m":{"vitA":23.0,"vitD":0.0,"vitE":2.0,"b1":0.02,"b2":0.08,"niacin":0.5,"b6":0.02,"folat":6.0,"b12":0.0,"panto":0.02,"vitC":0.0,"ca":36.0,"mg":20.0,"p":14.0,"k":52.0,"fe":1.2,"zn":0.0,"jod":0.0,"na":1610.0,"se":0.9,"cu":0.12,"om3":0.0,"bor":0.35,"mol":35,"chr":5,"sil":3}},{"n":"Olive, schwarz","g":"Nüsse & Samen","p":0.9,"f":14.0,"c":3.0,"b":4.3,"m":{"vitA":3.0,"vitD":0.0,"vitE":2.0,"b1":0.0,"b2":0.0,"niacin":0.0,"b6":0.02,"folat":11.0,"b12":0.0,"panto":0.02,"vitC":0.0,"ca":61.0,"mg":22.0,"p":24.0,"k":40.0,"fe":1.5,"zn":0.0,"jod":0.0,"na":3290.0,"se":0.9,"cu":0.251,"mn":0.02,"om3":0.0,"bor":0.35,"mol":35,"chr":5,"sil":3}},{"n":"Paranuss","g":"Nüsse & Samen","p":16.6,"f":66.5,"c":3.2,"b":7.0,"m":{"vitA":0.0,"vitD":0.0,"vitE":14.0,"b1":0.8,"b2":0.03,"niacin":0.3,"b6":0.17,"folat":13.0,"b12":0.0,"panto":0.27,"vitC":1.0,"ca":160.0,"mg":350.0,"p":650.0,"k":590.0,"fe":3.1,"zn":4.3,"jod":2.5,"na":0.7,"se":1917.0,"cu":1.743,"mn":1.223,"om3":0.0,"eaa":5.63,"bor":1.72,"mol":35,"chr":5,"sil":3}},{"n":"Pinienkerne","g":"Nüsse & Samen","p":31.6,"f":44.9,"c":13.9,"b":3.7,"m":{"vitA":0.0,"vitD":0.0,"vitE":13.0,"b1":1.5,"b2":0.28,"niacin":4.4,"b6":0.01,"folat":34.0,"b12":0.0,"panto":0.31,"vitC":3.0,"ca":21.0,"mg":400.0,"p":700.0,"k":830.0,"fe":7.8,"zn":9.0,"jod":0.2,"na":4.6,"se":0.7,"cu":1.324,"mn":8.802,"om3":0.0,"eaa":4.36,"bor":2.0,"mol":35,"chr":5,"sil":3}},{"n":"Pistazie","g":"Nüsse & Samen","p":20.3,"f":45.4,"c":17.6,"b":10.0,"m":{"vitA":18.0,"vitD":0.0,"vitE":30.0,"b1":0.5,"b2":0.3,"niacin":1.0,"b6":0.25,"folat":58.0,"b12":0.0,"panto":0.52,"vitC":1.0,"ca":65.0,"mg":120.0,"p":160.0,"k":500.0,"fe":7.0,"zn":3.3,"jod":11.0,"na":9.0,"se":7.0,"cu":1.3,"mn":1.2,"om3":0.0,"eaa":7.81,"bor":2.0,"mol":35,"chr":5,"sil":3}},{"n":"Samen, Kerne, Nüsse (Durchschnitt), ungesalzen","g":"Nüsse & Samen","p":20.3,"f":50.6,"c":11.2,"b":9.5,"m":{"vitA":3.0,"vitD":0.0,"vitE":19.0,"b1":0.75,"b2":0.18,"niacin":3.3,"b6":0.38,"folat":86.0,"b12":0.01,"panto":0.71,"vitC":1.3,"ca":170.0,"mg":260.0,"p":510.0,"k":620.0,"fe":5.4,"zn":5.0,"jod":5.8,"na":8.6,"se":9.3,"cu":1.52,"mn":2.61,"om3":9.0,"eaa":6.46,"bor":2.0,"mol":35,"chr":5,"sil":3}},{"n":"Sesamsamen ungeschält","g":"Nüsse & Samen","p":17.7,"f":49.8,"c":11.7,"b":11.8,"m":{"vitA":0.0,"vitD":0.0,"vitE":1.7,"b1":0.69,"b2":0.09,"niacin":5.8,"b6":0.4,"folat":120.0,"b12":0.0,"panto":0.29,"vitC":0.0,"ca":940.0,"mg":330.0,"p":570.0,"k":500.0,"fe":8.6,"zn":8.5,"jod":10.0,"na":7.7,"se":34.4,"cu":4.082,"mn":2.46,"om3":0.0,"eaa":6.85,"bor":2.0,"mol":35,"chr":5,"sil":3}},{"n":"Sonnenblumenkerne","g":"Nüsse & Samen","p":21.3,"f":53.0,"c":12.0,"b":8.0,"m":{"vitA":2.0,"vitD":0.0,"vitE":35.0,"b1":1.5,"b2":0.36,"niacin":8.3,"b6":1.3,"folat":230.0,"b12":0.0,"panto":1.1,"vitC":1.0,"ca":92.0,"mg":330.0,"p":670.0,"k":750.0,"fe":5.0,"zn":5.8,"jod":5.0,"na":3.6,"se":53.0,"cu":1.8,"mn":1.95,"om3":14.0,"eaa":8.62,"bor":2.0,"mol":35,"chr":5,"sil":3}},{"n":"Dorsch, roh","g":"Fisch & Meeresfrüchte","p":18.1,"f":0.4,"c":0.0,"b":0.0,"m":{"vitA":11.0,"vitD":1.8,"vitE":0.7,"b1":0.05,"b2":0.05,"niacin":2.1,"b6":0.14,"folat":11.0,"b12":1.4,"vitC":0.0,"ca":13.0,"mg":23.0,"p":200.0,"k":400.0,"fe":0.2,"zn":0.4,"jod":160.0,"na":53.0,"se":33.1,"cu":0.028,"mn":0.015,"om3":184.0,"eaa":7.55,"bor":0.02,"mol":5,"chr":2,"sil":0.5}},{"n":"Egli, roh","g":"Fisch & Meeresfrüchte","p":18.0,"f":0.7,"c":0.0,"b":0.0,"m":{"vitA":7.0,"vitD":0.4,"vitE":0.2,"b1":0.07,"b2":0.1,"niacin":2.9,"b6":0.12,"folat":5.0,"b12":1.0,"panto":0.19,"vitC":2.0,"ca":80.0,"mg":30.0,"p":370.0,"k":80.0,"fe":0.9,"zn":1.1,"jod":4.0,"na":92.0,"se":12.6,"cu":0.15,"mn":0.7,"om3":253.0,"eaa":8.22,"bor":0.02,"mol":5,"chr":2,"sil":0.5}},{"n":"Felche, roh","g":"Fisch & Meeresfrüchte","p":19.2,"f":2.7,"c":0.0,"b":0.0,"m":{"vitA":13.0,"vitD":22.0,"vitE":1.3,"b1":0.07,"b2":0.07,"niacin":4.0,"b6":0.45,"folat":10.0,"b12":1.0,"vitC":0.0,"ca":34.0,"mg":26.0,"p":230.0,"k":400.0,"fe":0.4,"zn":0.6,"jod":1.5,"na":20.0,"se":12.6,"cu":0.072,"mn":0.067,"om3":1258.0,"eaa":8.09,"bor":0.02,"mol":5,"chr":2,"sil":0.5}},{"n":"Flunder, roh","g":"Fisch & Meeresfrüchte","p":16.5,"f":0.7,"c":0.0,"b":0.0,"m":{"vitA":9.0,"vitD":0.2,"vitE":0.36,"b1":0.22,"b2":0.21,"niacin":3.4,"b6":0.25,"folat":11.0,"b12":1.0,"panto":0.68,"vitC":0.8,"ca":48.0,"mg":22.0,"p":190.0,"k":290.0,"fe":0.3,"zn":0.5,"jod":6.3,"na":150.0,"se":26.6,"cu":0.019,"mn":0.014,"om3":245.0,"eaa":5.63,"bor":0.02,"mol":5,"chr":2,"sil":0.5}},{"n":"Forelle, roh","g":"Fisch & Meeresfrüchte","p":16.0,"f":7.0,"c":0.0,"b":0.0,"m":{"vitA":12.0,"vitE":0.65,"b1":0.08,"b2":0.06,"b6":0.54,"b12":5.0,"ca":14.0,"mg":30.0,"p":220.0,"k":460.0,"fe":2.0,"zn":0.4,"jod":14.0,"na":40.0,"se":23.6,"cu":0.046,"mn":0.011,"om3":733.0,"eaa":8.84,"bor":0.02,"mol":5,"chr":2,"sil":0.5}},{"n":"Garnele, roh","g":"Fisch & Meeresfrüchte","p":11.4,"f":0.6,"c":1.2,"b":0.0,"m":{"vitA":2.0,"vitD":0.0,"vitE":0.82,"b1":0.14,"b2":0.09,"niacin":2.0,"b6":0.08,"folat":14.0,"b12":0.0,"panto":0.0,"vitC":1.0,"ca":30.0,"mg":0.0,"p":200.0,"k":210.0,"fe":0.3,"zn":0.8,"jod":91.0,"na":190.0,"cu":0.391,"mn":0.033,"om3":61.0,"bor":0.02,"mol":5,"chr":2,"sil":0.5}},{"n":"Hecht, roh","g":"Fisch & Meeresfrüchte","p":18.4,"f":0.8,"c":0.0,"b":0.0,"m":{"vitA":6.0,"vitD":2.0,"vitE":0.91,"b1":0.08,"b2":0.06,"niacin":1.6,"b6":0.15,"folat":6.0,"b12":2.0,"panto":0.24,"vitC":3.8,"ca":32.0,"mg":28.0,"p":220.0,"k":320.0,"fe":0.5,"zn":0.8,"jod":8.0,"na":75.0,"se":12.6,"cu":0.051,"mn":0.24,"om3":107.0,"eaa":8.16,"bor":0.02,"mol":5,"chr":2,"sil":0.5}},{"n":"Heilbutt, roh","g":"Fisch & Meeresfrüchte","p":20.6,"f":3.9,"c":0.0,"b":0.0,"m":{"vitA":42.0,"vitD":9.0,"vitE":0.7,"b1":0.04,"b2":0.04,"niacin":4.0,"b6":0.42,"folat":12.0,"b12":0.96,"panto":0.28,"vitC":0.0,"ca":15.0,"mg":23.0,"p":220.0,"k":400.0,"fe":0.5,"zn":0.5,"jod":1.0,"na":64.0,"se":45.6,"cu":0.023,"mn":0.011,"om3":194.0,"eaa":8.82,"bor":0.02,"mol":5,"chr":2,"sil":0.5}},{"n":"Kalmar, roh","g":"Fisch & Meeresfrüchte","p":16.0,"f":1.1,"c":2.3,"b":0.0,"m":{"vitA":75.0,"vitD":0.0,"vitE":0.77,"b1":0.02,"b2":0.2,"niacin":2.2,"b6":0.06,"folat":13.0,"b12":1.3,"panto":0.0,"vitC":5.0,"ca":14.0,"mg":40.0,"p":200.0,"k":270.0,"fe":0.6,"zn":1.1,"jod":20.0,"na":160.0,"se":44.8,"cu":1.891,"mn":0.035,"om3":488.0,"eaa":5.67,"bor":0.02,"mol":5,"chr":2,"sil":0.5}},{"n":"Krustentiere (Durchschnitt), roh","g":"Fisch & Meeresfrüchte","p":15.5,"f":1.0,"c":1.0,"b":0.0,"m":{"vitA":1.0,"vitD":0.0,"vitE":1.2,"b1":0.14,"b2":0.05,"niacin":3.9,"b6":0.15,"folat":16.0,"b12":0.45,"panto":0.75,"vitC":2.0,"ca":30.0,"mg":34.0,"p":190.0,"k":210.0,"fe":1.2,"zn":2.7,"jod":170.0,"na":260.0,"cu":0.391,"mn":0.033,"om3":61.0,"bor":0.02,"mol":5,"chr":2,"sil":0.5}},{"n":"Lachs, Zucht, roh","g":"Fisch & Meeresfrüchte","p":19.9,"f":13.4,"c":0.0,"b":0.0,"m":{"vitA":11.0,"vitD":8.3,"vitE":1.4,"b1":0.21,"b2":0.14,"niacin":8.2,"b6":0.5,"folat":13.0,"b12":6.9,"panto":2.0,"vitC":1.0,"ca":12.0,"mg":28.0,"p":240.0,"k":440.0,"fe":0.4,"zn":0.4,"jod":44.0,"na":57.0,"se":24.0,"cu":0.045,"mn":0.011,"om3":1966.0,"eaa":8.65,"bor":0.02,"mol":5,"chr":2,"sil":0.5}},{"n":"Lachs, geräuchert","g":"Fisch & Meeresfrüchte","p":23.2,"f":8.2,"c":0.0,"b":0.0,"m":{"vitA":7.0,"vitD":6.3,"vitE":1.8,"b1":0.25,"b2":0.16,"niacin":8.7,"b6":0.64,"folat":3.0,"b12":4.3,"panto":0.71,"vitC":0.0,"ca":10.0,"mg":27.0,"p":300.0,"k":410.0,"fe":0.0,"zn":0.4,"jod":56.0,"na":1660.0,"se":32.4,"cu":0.23,"mn":0.017,"om3":450.0,"eaa":7.75,"bor":0.02,"mol":5,"chr":2,"sil":0.5}},{"n":"Lachs, wild, roh","g":"Fisch & Meeresfrüchte","p":19.7,"f":11.5,"c":0.0,"b":0.0,"m":{"vitA":0.0,"vitD":8.4,"vitE":1.3,"b1":0.2,"b2":0.15,"niacin":7.0,"b6":0.6,"folat":13.0,"b12":6.9,"panto":2.0,"vitC":0.0,"ca":8.0,"mg":30.0,"p":260.0,"k":480.0,"fe":0.4,"zn":0.4,"jod":53.0,"na":63.0,"se":36.5,"cu":0.25,"mn":0.016,"om3":1436.0,"eaa":8.41,"bor":0.02,"mol":5,"chr":2,"sil":0.5}},{"n":"Miesmuschel, roh","g":"Fisch & Meeresfrüchte","p":11.7,"f":2.7,"c":3.4,"b":0.0,"m":{"vitA":84.0,"vitD":0.0,"vitE":1.1,"b1":0.12,"b2":0.16,"niacin":1.6,"b6":0.08,"folat":37.0,"b12":8.0,"panto":0.29,"vitC":0.0,"ca":88.0,"mg":36.0,"p":240.0,"k":320.0,"fe":5.8,"zn":1.6,"jod":130.0,"na":290.0,"se":44.8,"cu":0.094,"mn":3.4,"om3":441.0,"eaa":4.33,"bor":0.02,"mol":5,"chr":2,"sil":0.5}},{"n":"Sardine im Öl, abgetropft","g":"Fisch & Meeresfrüchte","p":23.0,"f":13.7,"c":0.0,"b":0.0,"m":{"vitA":33.0,"vitD":6.0,"vitE":0.4,"b1":0.02,"b2":0.25,"niacin":6.5,"b6":0.21,"folat":12.0,"b12":12.0,"panto":0.6,"vitC":0.0,"ca":400.0,"mg":37.0,"p":470.0,"k":380.0,"fe":2.5,"zn":2.3,"jod":26.0,"na":480.0,"se":52.7,"cu":0.186,"mn":0.108,"om3":982.0,"eaa":10.43,"bor":0.02,"mol":5,"chr":2,"sil":0.5}},{"n":"Sardine, roh","g":"Fisch & Meeresfrüchte","p":20.4,"f":9.0,"c":0.0,"b":0.0,"m":{"vitA":28.0,"vitD":11.0,"vitE":0.29,"b1":0.01,"b2":0.25,"niacin":8.2,"b6":0.68,"folat":4.0,"b12":6.0,"panto":0.8,"vitC":0.0,"ca":85.0,"mg":28.0,"p":270.0,"k":360.0,"fe":1.4,"zn":2.9,"jod":32.0,"na":110.0,"se":52.7,"cu":0.186,"mn":0.108,"om3":982.0,"eaa":10.43,"bor":0.02,"mol":5,"chr":2,"sil":0.5}},{"n":"Scampi (Kaisergranat), roh","g":"Fisch & Meeresfrüchte","p":19.6,"f":1.3,"c":0.8,"b":0.0,"m":{"vitA":0.0,"vitD":0.0,"vitE":1.5,"b1":0.13,"b2":0.01,"niacin":5.7,"b6":0.21,"folat":17.0,"b12":0.9,"panto":1.5,"vitC":3.0,"ca":29.0,"mg":68.0,"p":180.0,"k":210.0,"fe":2.0,"zn":4.6,"jod":240.0,"na":340.0,"se":63.6,"cu":1.349,"mn":0.056,"om3":170.0,"eaa":6.28,"bor":0.02,"mol":5,"chr":2,"sil":0.5}},{"n":"Scholle, roh","g":"Fisch & Meeresfrüchte","p":17.1,"f":1.9,"c":0.0,"b":0.0,"m":{"vitA":16.0,"vitD":3.0,"vitE":0.8,"b1":0.21,"b2":0.22,"niacin":4.0,"b6":0.22,"folat":11.0,"b12":1.5,"panto":0.8,"vitC":1.5,"ca":61.0,"mg":22.0,"p":200.0,"k":310.0,"fe":0.9,"zn":0.5,"jod":53.0,"na":100.0,"se":26.6,"cu":0.019,"mn":0.014,"om3":245.0,"eaa":5.63,"bor":0.02,"mol":5,"chr":2,"sil":0.5}},{"n":"Seehecht, roh","g":"Fisch & Meeresfrüchte","p":17.0,"f":0.3,"c":0.0,"b":0.0,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.19,"b1":0.05,"b2":0.08,"niacin":2.2,"b6":0.18,"folat":12.0,"b12":2.1,"panto":0.19,"vitC":1.5,"ca":25.0,"mg":25.0,"p":190.0,"k":320.0,"fe":0.7,"zn":0.4,"jod":120.0,"na":77.0,"se":32.1,"cu":0.031,"mn":0.104,"om3":224.0,"eaa":7.76,"bor":0.02,"mol":5,"chr":2,"sil":0.5}},{"n":"Seelachs, roh","g":"Fisch & Meeresfrüchte","p":19.3,"f":0.3,"c":0.0,"b":0.0,"m":{"vitA":4.0,"vitD":0.8,"vitE":0.36,"b1":0.05,"b2":0.05,"niacin":2.0,"b6":0.18,"folat":10.0,"b12":1.3,"panto":0.38,"vitC":0.0,"ca":8.0,"mg":14.0,"p":170.0,"k":440.0,"fe":0.2,"zn":0.3,"jod":85.0,"na":40.0,"cu":0.041,"mn":0.011,"om3":235.0,"bor":0.02,"mol":5,"chr":2,"sil":0.5}},{"n":"Seezunge, roh","g":"Fisch & Meeresfrüchte","p":18.7,"f":1.1,"c":0.0,"b":0.0,"m":{"vitA":0.0,"vitD":8.0,"vitE":0.8,"b1":0.07,"b2":0.05,"niacin":3.5,"b6":0.31,"folat":10.0,"b12":0.8,"panto":0.3,"vitC":2.0,"ca":29.0,"mg":25.0,"p":270.0,"k":350.0,"fe":0.6,"zn":0.1,"jod":25.0,"na":120.0,"se":26.6,"cu":0.019,"mn":0.014,"om3":245.0,"eaa":5.63,"bor":0.02,"mol":5,"chr":2,"sil":0.5}},{"n":"Thon im Wasser, abgetropft","g":"Fisch & Meeresfrüchte","p":25.6,"f":1.6,"c":0.0,"b":0.0,"m":{"vitA":372.0,"vitD":2.2,"vitE":0.9,"b1":0.02,"b2":0.07,"niacin":11.0,"b6":0.37,"folat":7.0,"b12":3.0,"panto":0.3,"vitC":0.0,"ca":9.0,"mg":28.0,"p":160.0,"k":280.0,"fe":1.6,"zn":0.7,"jod":0.0,"na":420.0,"se":80.4,"cu":0.051,"mn":0.011,"om3":270.0,"eaa":10.81,"bor":0.02,"mol":5,"chr":2,"sil":0.5}},{"n":"Thunfisch, roh","g":"Fisch & Meeresfrüchte","p":23.4,"f":6.2,"c":0.0,"b":0.0,"m":{"vitA":372.0,"vitD":4.2,"vitE":1.0,"b1":0.22,"b2":0.12,"niacin":9.0,"b6":0.6,"folat":15.0,"b12":6.8,"panto":0.9,"vitC":0.0,"ca":28.0,"mg":34.0,"p":200.0,"k":330.0,"fe":1.1,"zn":0.8,"jod":50.0,"na":39.0,"se":36.5,"cu":0.086,"mn":0.015,"om3":1173.0,"eaa":9.89,"bor":0.02,"mol":5,"chr":2,"sil":0.5}},{"n":"Geflügelfleisch ohne Haut (Durchschnitt), roh","g":"Fleisch & Geflügel","p":22.9,"f":2.5,"c":0.1,"b":0.0,"m":{"vitA":4.0,"vitD":1.0,"vitE":0.48,"b1":0.12,"b2":0.17,"niacin":3.2,"b6":0.59,"folat":11.0,"b12":0.45,"panto":0.85,"vitC":0.0,"ca":6.7,"mg":26.0,"p":210.0,"k":330.0,"fe":0.6,"zn":1.0,"jod":2.2,"na":58.0,"se":15.7,"cu":0.053,"mn":0.019,"om3":40.0,"eaa":8.87,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Hirsch (Durchschnitt), roh","g":"Fleisch & Geflügel","p":20.6,"f":3.3,"c":0.0,"b":0.0,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.13,"b1":0.25,"b2":0.25,"niacin":0.0,"b6":0.3,"folat":5.0,"b12":1.0,"panto":0.8,"vitC":0.0,"ca":10.0,"mg":21.0,"p":200.0,"k":310.0,"fe":2.3,"zn":3.2,"jod":0.6,"na":62.0,"se":9.7,"cu":0.253,"mn":0.041,"om3":0.0,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Kalb, Filet, roh","g":"Fleisch & Geflügel","p":21.2,"f":3.8,"c":0.0,"b":0.0,"m":{"vitA":5.0,"vitD":0.0,"vitE":0.3,"b1":0.07,"b2":0.26,"niacin":9.1,"b6":0.56,"folat":14.0,"b12":1.2,"panto":1.4,"vitC":0.0,"ca":17.0,"mg":25.0,"p":210.0,"k":320.0,"fe":1.4,"zn":2.5,"jod":0.1,"na":91.0,"se":18.0,"cu":0.088,"mn":0.014,"om3":1.0,"eaa":9.19,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Kalb, Geschnetzeltes, roh","g":"Fleisch & Geflügel","p":22.0,"f":1.1,"c":0.0,"b":0.0,"m":{"vitA":5.0,"vitD":5.0,"vitE":0.5,"b1":0.08,"b2":0.19,"b6":0.46,"folat":7.0,"b12":1.6,"panto":1.5,"vitC":0.0,"ca":4.8,"mg":22.0,"p":200.0,"k":360.0,"fe":0.6,"zn":3.3,"jod":1.9,"na":51.0,"se":9.1,"cu":0.11,"mn":0.029,"eaa":8.95,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Kalb, Leber, roh","g":"Fleisch & Geflügel","p":19.6,"f":4.2,"c":4.6,"b":0.0,"m":{"vitA":11400.0,"vitD":0.3,"vitE":0.24,"b1":0.24,"b2":2.5,"niacin":14.0,"b6":0.9,"folat":240.0,"b12":60.0,"panto":7.9,"vitC":23.0,"ca":9.0,"mg":19.0,"p":330.0,"k":300.0,"fe":7.4,"zn":4.0,"jod":4.3,"na":68.0,"se":22.7,"cu":11.865,"mn":0.255,"om3":0.0,"eaa":9.2,"bor":0.02,"mol":120,"chr":2.5,"sil":0.5}},{"n":"Kalbfleisch (Durchschnitt), roh","g":"Fleisch & Geflügel","p":21.1,"f":4.8,"c":0.0,"b":0.0,"m":{"vitA":5.0,"vitD":2.5,"vitE":0.35,"b1":0.08,"b2":0.23,"niacin":4.2,"b6":0.45,"folat":10.0,"b12":1.5,"panto":1.4,"vitC":0.0,"ca":9.7,"mg":22.0,"p":200.0,"k":340.0,"fe":1.1,"zn":2.6,"jod":1.2,"na":66.0,"se":8.6,"cu":0.113,"mn":0.029,"eaa":8.49,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Lamm, Filet, roh","g":"Fleisch & Geflügel","p":20.4,"f":3.4,"c":0.0,"b":0.0,"m":{"vitA":9.0,"vitD":0.0,"vitE":0.19,"b1":0.13,"b2":0.23,"niacin":6.5,"b6":0.17,"folat":24.0,"b12":2.2,"panto":0.66,"vitC":0.0,"ca":12.0,"mg":27.0,"p":190.0,"k":280.0,"fe":1.9,"zn":3.2,"jod":0.7,"na":68.0,"se":23.6,"cu":0.128,"mn":0.024,"eaa":8.78,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Lamm, Gigot, roh (Schweiz, Neuseeland)","g":"Fleisch & Geflügel","p":20.2,"f":8.2,"c":0.0,"b":0.0,"m":{"vitA":9.0,"vitD":6.1,"vitE":0.4,"b1":0.18,"b2":0.06,"b6":0.46,"folat":6.0,"b12":3.6,"panto":0.92,"vitC":0.0,"ca":4.7,"mg":20.0,"p":190.0,"k":330.0,"fe":1.6,"zn":3.6,"jod":0.8,"na":61.0,"se":23.4,"cu":0.124,"mn":0.024,"eaa":8.64,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Lamm/Schaf (Durchschnitt), roh","g":"Fleisch & Geflügel","p":20.5,"f":5.8,"c":0.0,"b":0.0,"m":{"vitA":7.0,"vitD":3.8,"vitE":0.4,"b1":0.17,"b2":0.1,"niacin":1.6,"b6":0.38,"folat":11.0,"b12":3.3,"panto":0.77,"vitC":0.0,"ca":6.3,"mg":22.0,"p":190.0,"k":310.0,"fe":1.7,"zn":3.4,"jod":0.8,"na":58.0,"se":23.4,"cu":0.12,"mn":0.024,"eaa":8.54,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Poulet, Brust, mit Haut, roh (Schweiz)","g":"Fleisch & Geflügel","p":23.3,"f":6.5,"c":0.0,"b":0.0,"m":{"vitA":12.0,"vitD":1.5,"vitE":0.62,"b1":0.08,"b2":0.14,"b6":0.77,"folat":10.0,"b12":0.4,"panto":0.87,"vitC":0.0,"ca":3.9,"mg":26.0,"p":210.0,"k":320.0,"fe":0.3,"zn":0.5,"jod":10.0,"na":34.0,"se":16.6,"cu":0.039,"mn":0.018,"om3":30.0,"eaa":8.45,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Poulet, Brust, ohne Haut, roh (Schweiz)","g":"Fleisch & Geflügel","p":24.6,"f":1.0,"c":0.0,"b":0.0,"m":{"vitA":5.0,"vitD":1.5,"vitE":0.62,"b1":0.14,"b2":0.15,"b6":0.77,"folat":12.0,"b12":0.4,"panto":0.87,"vitC":0.0,"ca":3.3,"mg":27.0,"p":220.0,"k":350.0,"fe":0.3,"zn":0.5,"jod":0.9,"na":36.0,"se":22.8,"cu":0.037,"mn":0.011,"om3":7.0,"eaa":9.92,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Poulet, Schenkel, mit Haut, roh (Schweiz)","g":"Fleisch & Geflügel","p":17.9,"f":10.2,"c":0.0,"b":0.0,"m":{"vitA":12.0,"vitD":1.5,"vitE":0.62,"b1":0.08,"b2":0.14,"b6":0.57,"folat":10.0,"b12":0.4,"panto":0.87,"vitC":0.0,"ca":5.7,"mg":20.0,"p":180.0,"k":300.0,"fe":0.5,"zn":1.0,"jod":8.0,"na":63.0,"se":18.9,"cu":0.054,"mn":0.013,"om3":11.0,"eaa":6.7,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Poulet, Schenkel, ohne Haut, roh (Schweiz)","g":"Fleisch & Geflügel","p":19.7,"f":6.2,"c":0.0,"b":0.0,"m":{"vitA":5.0,"vitD":1.5,"vitE":0.62,"b1":0.14,"b2":0.27,"b6":0.38,"folat":10.0,"b12":0.4,"panto":0.87,"vitC":0.0,"ca":5.6,"mg":20.0,"p":190.0,"k":300.0,"fe":0.5,"zn":0.9,"jod":5.0,"na":76.0,"se":22.9,"cu":0.062,"mn":0.013,"om3":9.0,"eaa":8.51,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Poulet, ganz, mit Haut, roh","g":"Fleisch & Geflügel","p":18.8,"f":10.3,"c":0.0,"b":0.0,"m":{"vitA":12.0,"vitD":0.0,"vitE":0.07,"b1":0.11,"b2":0.15,"niacin":6.0,"b6":0.5,"folat":8.0,"b12":0.4,"panto":0.9,"vitC":2.5,"ca":12.0,"mg":20.0,"p":160.0,"k":260.0,"fe":0.7,"zn":1.0,"jod":10.0,"na":70.0,"se":14.4,"cu":0.048,"mn":0.019,"om3":40.0,"eaa":7.42,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Reh (Durchschnitt), roh","g":"Fleisch & Geflügel","p":22.4,"f":3.6,"c":0.0,"b":0.0,"m":{"vitA":0.0,"vitD":0.4,"vitE":0.76,"b1":0.1,"b2":0.25,"niacin":6.4,"b6":0.3,"folat":5.0,"b12":1.0,"panto":0.8,"vitC":0.0,"ca":25.0,"mg":20.0,"p":220.0,"k":340.0,"fe":3.0,"zn":3.0,"jod":0.6,"na":84.0,"se":9.7,"cu":0.253,"mn":0.041,"om3":0.0,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Rind, Entrecôte, roh (Schweiz)","g":"Fleisch & Geflügel","p":23.2,"f":4.5,"c":0.0,"b":0.0,"m":{"vitA":6.0,"vitD":0.5,"vitE":0.9,"b1":0.05,"b2":0.1,"b6":0.73,"folat":6.0,"b12":1.4,"panto":0.69,"vitC":0.0,"ca":4.9,"mg":20.0,"p":180.0,"k":360.0,"fe":1.3,"zn":3.4,"jod":3.0,"na":42.0,"se":27.3,"cu":0.076,"mn":0.075,"om3":0.0,"eaa":10.57,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Rind, Filet, roh","g":"Fleisch & Geflügel","p":21.9,"f":2.0,"c":0.0,"b":0.0,"m":{"vitA":6.0,"vitD":0.0,"vitE":0.24,"b1":0.1,"b2":0.13,"niacin":4.6,"b6":0.19,"folat":10.0,"b12":2.0,"panto":1.0,"vitC":0.0,"ca":3.0,"mg":22.0,"p":160.0,"k":340.0,"fe":2.3,"zn":4.4,"jod":0.1,"na":42.0,"se":26.9,"cu":0.074,"mn":0.013,"om3":0.0,"eaa":8.92,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Rind, Gehacktes, roh","g":"Fleisch & Geflügel","p":21.6,"f":7.5,"c":0.0,"b":0.0,"m":{"vitA":6.0,"vitD":0.5,"vitE":0.26,"b1":0.04,"b2":0.13,"b6":0.45,"folat":10.0,"b12":1.9,"panto":0.31,"vitC":0.0,"ca":5.0,"mg":17.0,"p":160.0,"k":310.0,"fe":2.0,"zn":4.4,"jod":3.0,"na":61.0,"se":15.8,"cu":0.067,"mn":0.01,"om3":3.0,"eaa":7.35,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Rind, Geschnetzeltes, roh","g":"Fleisch & Geflügel","p":22.2,"f":1.5,"c":0.0,"b":0.0,"m":{"vitA":6.0,"vitD":0.5,"vitE":0.26,"b1":0.01,"b2":0.12,"b6":0.45,"folat":6.0,"b12":1.4,"panto":0.74,"vitC":0.0,"ca":4.2,"mg":20.0,"p":190.0,"k":360.0,"fe":1.4,"zn":3.5,"jod":3.0,"na":44.0,"se":22.2,"cu":0.048,"mn":0.004,"om3":3.0,"eaa":11.34,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Rind, Leber, roh","g":"Fleisch & Geflügel","p":20.5,"f":3.9,"c":5.3,"b":0.0,"m":{"vitA":4180.0,"vitD":1.7,"vitE":0.75,"b1":0.28,"b2":2.9,"niacin":15.0,"b6":0.83,"folat":220.0,"b12":65.0,"panto":7.3,"vitC":23.0,"ca":7.0,"mg":17.0,"p":360.0,"k":290.0,"fe":7.0,"zn":4.8,"jod":13.0,"na":120.0,"se":39.7,"cu":9.755,"mn":0.31,"om3":0.0,"eaa":9.13,"bor":0.02,"mol":120,"chr":2.5,"sil":0.5}},{"n":"Rind, Siedfleisch, mager, roh","g":"Fleisch & Geflügel","p":20.7,"f":5.5,"c":0.0,"b":0.0,"m":{"vitA":6.0,"vitD":0.5,"vitE":0.26,"b1":0.04,"b2":0.13,"b6":0.55,"folat":6.0,"b12":1.4,"panto":0.74,"vitC":0.0,"ca":4.4,"mg":18.0,"p":180.0,"k":320.0,"fe":1.7,"zn":4.9,"jod":3.0,"na":57.0,"se":25.2,"cu":0.093,"mn":0.014,"om3":0.0,"eaa":8.91,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Rind, Voressen, roh","g":"Fleisch & Geflügel","p":21.2,"f":1.3,"c":0.0,"b":0.0,"m":{"vitA":6.0,"vitD":0.5,"vitE":0.26,"b1":0.01,"b2":0.12,"b6":0.42,"folat":6.0,"b12":1.4,"panto":0.74,"vitC":0.0,"ca":3.9,"mg":18.0,"p":180.0,"k":340.0,"fe":1.2,"zn":3.7,"jod":3.0,"na":49.0,"se":25.2,"cu":0.093,"mn":0.014,"om3":0.0,"eaa":8.91,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Rindfleisch (Durchschnitt), roh","g":"Fleisch & Geflügel","p":21.4,"f":5.4,"c":0.0,"b":0.0,"m":{"vitA":6.0,"vitD":0.2,"vitE":0.44,"b1":0.07,"b2":0.15,"niacin":3.0,"b6":0.31,"folat":5.9,"b12":2.9,"panto":0.68,"vitC":0.0,"ca":4.5,"mg":20.0,"p":180.0,"k":330.0,"fe":1.8,"zn":4.5,"jod":1.6,"na":45.0,"se":21.1,"cu":0.068,"mn":0.009,"om3":2.0,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Schwein, Filet, roh","g":"Fleisch & Geflügel","p":22.2,"f":3.6,"c":0.0,"b":0.0,"m":{"vitA":3.0,"vitD":0.7,"vitE":0.1,"b1":1.0,"b2":0.26,"niacin":4.3,"b6":0.45,"folat":4.0,"b12":0.7,"panto":0.9,"vitC":0.0,"ca":8.0,"mg":25.0,"p":230.0,"k":420.0,"fe":1.2,"zn":2.0,"jod":1.0,"na":120.0,"se":30.8,"cu":0.09,"mn":0.015,"om3":0.0,"eaa":9.38,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Schwein, Geschnetzeltes, roh","g":"Fleisch & Geflügel","p":21.3,"f":5.4,"c":0.0,"b":0.0,"m":{"vitA":3.0,"vitD":0.4,"vitE":0.27,"b1":0.6,"b2":0.13,"b6":0.68,"folat":2.0,"b12":0.7,"panto":0.78,"vitC":0.0,"ca":4.3,"mg":20.0,"p":190.0,"k":340.0,"fe":0.7,"zn":2.4,"jod":1.0,"na":48.0,"se":34.5,"cu":0.057,"mn":0.008,"om3":0.0,"eaa":10.03,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Schwein, Kotelett, roh","g":"Fleisch & Geflügel","p":21.4,"f":10.4,"c":0.0,"b":0.0,"m":{"vitA":3.0,"vitD":0.4,"vitE":0.27,"b1":0.84,"b2":0.16,"b6":0.7,"folat":2.0,"b12":0.7,"panto":0.79,"vitC":0.0,"ca":4.9,"mg":21.0,"p":200.0,"k":350.0,"fe":0.4,"zn":1.4,"jod":1.1,"na":43.0,"se":36.0,"cu":0.066,"mn":0.008,"om3":0.0,"eaa":9.84,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Schwein, Leber, roh","g":"Fleisch & Geflügel","p":20.7,"f":4.9,"c":0.9,"b":0.0,"m":{"vitA":11500.0,"vitD":0.0,"vitE":0.6,"b1":0.31,"b2":3.2,"niacin":16.0,"b6":0.59,"folat":140.0,"b12":39.0,"panto":6.8,"vitC":23.0,"ca":7.6,"mg":23.0,"p":410.0,"k":360.0,"fe":18.0,"zn":6.5,"jod":14.0,"na":77.0,"se":52.7,"cu":0.677,"mn":0.344,"om3":20.0,"eaa":9.33,"bor":0.02,"mol":120,"chr":2.5,"sil":0.5}},{"n":"Schweinefleisch (Durchschnitt), roh","g":"Fleisch & Geflügel","p":21.4,"f":8.3,"c":0.0,"b":0.0,"m":{"vitA":3.0,"vitD":0.3,"vitE":0.31,"b1":0.83,"b2":0.2,"niacin":1.8,"b6":0.49,"folat":3.4,"b12":0.77,"panto":0.81,"vitC":0.0,"ca":6.0,"mg":21.0,"p":180.0,"k":330.0,"fe":1.0,"zn":2.7,"jod":1.1,"na":63.0,"se":32.4,"cu":0.065,"mn":0.012,"eaa":9.26,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Truthahn, Brust, Schnitzel, roh","g":"Fleisch & Geflügel","p":24.0,"f":1.3,"c":0.0,"b":0.0,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.0,"b1":0.07,"b2":0.12,"niacin":7.9,"b6":0.58,"folat":8.0,"b12":0.7,"panto":0.8,"vitC":0.0,"ca":7.9,"mg":32.0,"p":210.0,"k":330.0,"fe":0.7,"zn":1.8,"jod":1.5,"na":63.0,"se":22.7,"cu":0.07,"mn":0.011,"om3":2.0,"eaa":8.16,"bor":0.02,"mol":10,"chr":2.0,"sil":0.5}},{"n":"Wildfleisch (Durchschnitt), roh","g":"Fleisch & Geflügel","p":21.1,"f":3.4,"c":0.0,"b":0.0,"m":{"vitA":1.0,"vitD":0.1,"vitE":0.31,"b1":0.17,"b2":0.22,"niacin":3.2,"b6":0.31,"folat":5.0,"b12":1.4,"panto":0.79,"vitC":0.0,"ca":15.0,"mg":21.0,"p":200.0,"k":320.0,"fe":2.5,"zn":2.9,"jod":1.2,"na":70.0,"se":9.7,"cu":0.253,"mn":0.041,"om3":0.0,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Wildschwein (Durchschnitt), roh","g":"Fleisch & Geflügel","p":19.5,"f":3.4,"c":0.0,"b":0.0,"m":{"vitA":8.0,"vitD":0.0,"vitE":0.21,"b1":0.1,"b2":0.2,"niacin":5.1,"b6":0.4,"folat":5.0,"b12":5.0,"panto":0.7,"vitC":0.0,"ca":10.0,"mg":22.0,"p":170.0,"k":360.0,"fe":1.8,"zn":2.2,"jod":6.0,"na":94.0,"se":9.8,"eaa":9.84,"bor":0.02,"mol":10,"chr":2.5,"sil":0.5}},{"n":"Hühnerei, ganz, festgekocht","g":"Eier","p":13.2,"f":11.4,"c":0.3,"b":0.0,"m":{"vitA":218.0,"vitD":3.1,"vitE":0.38,"b1":0.3,"b2":0.45,"niacin":0.04,"b6":0.19,"b12":5.4,"panto":1.4,"vitC":0.0,"ca":56.0,"mg":9.1,"p":220.0,"k":130.0,"fe":1.9,"zn":1.6,"jod":34.0,"na":150.0,"se":30.8,"cu":0.013,"mn":0.026,"om3":43.0,"eaa":5.55,"bor":0.02,"mol":10,"chr":2,"sil":0.5}},{"n":"Hühnerei, ganz, roh","g":"Eier","p":11.9,"f":10.3,"c":0.3,"b":0.0,"m":{"vitA":196.0,"vitD":2.9,"vitE":0.34,"b1":0.34,"b2":0.51,"niacin":0.05,"b6":0.21,"b12":1.9,"panto":1.6,"vitC":0.0,"ca":53.0,"mg":8.6,"p":210.0,"k":120.0,"fe":1.8,"zn":1.5,"jod":32.0,"na":140.0,"se":30.7,"cu":0.072,"mn":0.028,"om3":58.0,"eaa":5.62,"bor":0.02,"mol":10,"chr":2,"sil":0.5}},{"n":"Hühnereigelb, roh (Eidotter)","g":"Eier","p":16.5,"f":31.5,"c":0.2,"b":0.0,"m":{"vitA":610.0,"vitD":4.5,"vitE":3.6,"b1":0.22,"b2":0.5,"niacin":0.04,"b6":0.35,"folat":140.0,"b12":4.7,"panto":4.4,"vitC":0.0,"ca":140.0,"mg":15.0,"p":520.0,"k":97.0,"fe":5.5,"zn":3.8,"jod":12.0,"na":50.0,"se":56.0,"cu":0.077,"mn":0.055,"om3":125.0,"eaa":6.77,"bor":0.02,"mol":10,"chr":6,"sil":0.5}},{"n":"Hühnereiweiss, roh (Eiklar)","g":"Eier","p":10.5,"f":0.1,"c":0.3,"b":0.0,"m":{"vitA":0.0,"vitD":0.0,"vitE":0.0,"b1":0.0,"b2":0.44,"niacin":0.1,"b6":0.01,"folat":12.0,"b12":0.1,"panto":0.2,"vitC":0.0,"ca":6.0,"mg":10.0,"p":15.0,"k":140.0,"fe":0.1,"zn":0.0,"jod":6.8,"na":160.0,"se":20.0,"cu":0.023,"mn":0.011,"om3":0.0,"eaa":5.24,"bor":0.02,"mol":10,"chr":0.2,"sil":0.5}},{"n":"Appenzeller, vollfett","g":"Milchprodukte & Käse","p":24.8,"f":31.7,"c":0.0,"b":0.0,"m":{"vitA":366.0,"vitD":0.6,"vitE":0.95,"b1":0.04,"b2":0.44,"niacin":0.1,"b6":0.07,"folat":15.0,"b12":1.0,"panto":0.4,"vitC":0.0,"ca":740.0,"mg":29.0,"p":540.0,"k":82.0,"fe":0.3,"zn":4.0,"jod":8.4,"na":620.0,"se":30.0,"cu":0.047,"mn":0.026,"om3":9.0,"eaa":14.17,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Berner Alpkäse","g":"Milchprodukte & Käse","p":27.7,"f":38.3,"c":0.0,"b":0.0,"m":{"ca":920.0,"na":660.0,"se":14.5,"cu":0.032,"mn":0.017,"om3":0.0,"eaa":14.86,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Blanc battu","g":"Milchprodukte & Käse","p":7.6,"f":0.1,"c":2.9,"b":0.0,"m":{"vitD":0.0,"vitE":0.0,"b1":0.01,"b2":0.13,"niacin":0.22,"b6":0.03,"folat":13.0,"b12":0.27,"panto":0.11,"vitC":0.1,"ca":77.0,"mg":6.9,"p":100.0,"k":98.0,"fe":0.0,"zn":0.4,"jod":7.0,"na":23.0,"se":11.9,"cu":0.033,"mn":0.015,"om3":1.0,"eaa":4.9,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Brie, vollfett","g":"Milchprodukte & Käse","p":21.8,"f":23.5,"c":0.0,"b":0.0,"m":{"vitA":255.0,"vitD":0.5,"vitE":0.61,"b1":0.02,"b2":0.25,"niacin":1.2,"b6":0.14,"folat":65.0,"b12":1.8,"panto":0.69,"vitC":0.0,"ca":420.0,"mg":19.0,"p":300.0,"k":84.0,"fe":0.1,"zn":2.5,"jod":8.3,"na":510.0,"se":14.5,"cu":0.019,"mn":0.034,"om3":0.0,"eaa":9.67,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Camembert, vollfett","g":"Milchprodukte & Käse","p":21.2,"f":23.7,"c":0.0,"b":0.0,"m":{"vitA":218.0,"vitD":0.5,"vitE":0.44,"b1":0.02,"b2":0.23,"niacin":1.1,"b6":0.15,"folat":80.0,"b12":1.8,"panto":0.8,"vitC":0.0,"ca":370.0,"mg":19.0,"p":260.0,"k":82.0,"fe":0.1,"zn":2.2,"jod":20.0,"na":890.0,"se":14.5,"cu":0.021,"mn":0.038,"om3":0.0,"eaa":9.23,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Emmentaler, vollfett","g":"Milchprodukte & Käse","p":29.0,"f":32.6,"c":0.0,"b":0.0,"m":{"vitA":293.0,"vitD":1.1,"vitE":0.35,"b1":0.01,"b2":0.27,"niacin":0.18,"b6":0.12,"folat":9.4,"b12":3.1,"panto":0.4,"vitC":0.0,"ca":1030.0,"mg":31.0,"p":620.0,"k":84.0,"fe":0.4,"zn":4.6,"jod":20.0,"na":170.0,"se":30.0,"cu":0.047,"mn":0.026,"om3":9.0,"eaa":14.17,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Glarner Schabziger","g":"Milchprodukte & Käse","p":32.3,"f":0.5,"c":0.0,"b":0.0,"m":{"vitA":3.0,"vitD":0.0,"vitE":0.0,"b1":0.01,"b2":0.28,"niacin":0.0,"b6":0.05,"folat":0.0,"b12":0.0,"panto":0.0,"vitC":0.0,"ca":860.0,"mg":34.0,"p":560.0,"k":140.0,"fe":0.2,"zn":3.9,"jod":0.0,"na":1740.0,"se":22.5,"cu":0.032,"mn":0.02,"om3":0.0,"eaa":17.17,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Greyerzer, vollfett","g":"Milchprodukte & Käse","p":27.0,"f":32.0,"c":0.0,"b":0.0,"m":{"vitA":307.0,"vitD":1.1,"vitE":0.35,"b1":0.02,"b2":0.32,"niacin":0.2,"b6":0.13,"folat":10.0,"b12":2.0,"panto":0.5,"vitC":0.0,"ca":900.0,"mg":35.0,"p":600.0,"k":90.0,"fe":0.4,"zn":4.2,"jod":11.0,"na":590.0,"se":14.5,"cu":0.032,"mn":0.017,"om3":0.0,"eaa":14.86,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Hart- und Halbhartkäse, vollfett (Durchschnitt)","g":"Milchprodukte & Käse","p":27.2,"f":32.1,"c":0.0,"b":0.0,"m":{"vitA":325.0,"vitD":1.0,"vitE":0.47,"b1":0.02,"b2":0.32,"niacin":0.18,"b6":0.12,"folat":13.0,"b12":2.3,"panto":0.45,"vitC":0.0,"ca":910.0,"mg":32.0,"p":590.0,"k":86.0,"fe":0.4,"zn":4.2,"jod":15.0,"na":460.0,"se":30.0,"cu":0.047,"mn":0.026,"om3":9.0,"eaa":14.17,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Hüttenkäse, nature","g":"Milchprodukte & Käse","p":12.7,"f":4.5,"c":2.4,"b":0.0,"m":{"vitA":48.0,"vitD":0.1,"vitE":0.11,"b1":0.01,"b2":0.12,"niacin":0.1,"b6":0.02,"folat":15.0,"b12":1.0,"panto":0.57,"vitC":0.0,"ca":69.0,"mg":6.2,"p":150.0,"k":72.0,"fe":0.0,"zn":0.4,"jod":20.0,"na":320.0,"se":9.7,"cu":0.029,"mn":0.002,"om3":0.0,"eaa":5.21,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Joghurt Bifidus, nature","g":"Milchprodukte & Käse","p":4.1,"f":3.6,"c":4.5,"b":0.0,"m":{"vitA":38.0,"vitD":0.1,"vitE":0.11,"b1":0.02,"b2":0.16,"niacin":0.09,"b6":0.04,"folat":5.0,"b12":0.5,"panto":0.36,"vitC":0.0,"ca":150.0,"mg":12.0,"p":110.0,"k":180.0,"fe":0.0,"zn":0.5,"jod":7.5,"na":45.0,"se":2.2,"cu":0.009,"mn":0.004,"om3":0.0,"eaa":1.68,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Joghurt, nature","g":"Milchprodukte & Käse","p":4.0,"f":3.6,"c":4.5,"b":0.0,"m":{"vitA":38.0,"vitD":0.1,"vitE":0.1,"b1":0.02,"b2":0.16,"niacin":0.09,"b6":0.04,"folat":5.0,"b12":0.5,"panto":0.36,"vitC":2.0,"ca":140.0,"mg":12.0,"p":110.0,"k":170.0,"fe":0.0,"zn":0.4,"jod":16.0,"na":49.0,"se":2.2,"cu":0.009,"mn":0.004,"om3":0.0,"eaa":1.68,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Joghurt, nature, mager","g":"Milchprodukte & Käse","p":4.3,"f":0.1,"c":5.5,"b":0.0,"m":{"vitA":1.0,"vitD":0.0,"vitE":0.0,"b1":0.05,"b2":0.23,"niacin":0.13,"b6":0.06,"folat":13.0,"b12":0.6,"panto":0.47,"vitC":0.0,"ca":160.0,"mg":15.0,"p":130.0,"k":210.0,"fe":0.1,"zn":0.5,"jod":9.5,"na":60.0,"se":3.3,"cu":0.013,"mn":0.004,"om3":0.0,"eaa":2.54,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Magermilch, UHT","g":"Milchprodukte & Käse","p":3.4,"f":0.1,"c":4.7,"b":0.0,"m":{"vitA":2.0,"vitD":0.0,"vitE":0.0,"b1":0.02,"b2":0.16,"niacin":0.08,"b6":0.03,"folat":4.0,"b12":0.09,"panto":0.35,"vitC":0.6,"ca":130.0,"mg":11.0,"p":97.0,"k":160.0,"fe":0.0,"zn":0.4,"jod":2.8,"na":39.0,"se":3.1,"cu":0.013,"mn":0.003,"om3":0.0,"eaa":1.55,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Milch (Durchschnitt)","g":"Milchprodukte & Käse","p":3.3,"f":3.4,"c":4.6,"b":0.0,"m":{"vitA":39.0,"vitD":0.1,"vitE":0.1,"b1":0.02,"b2":0.15,"niacin":0.1,"b6":0.03,"folat":4.6,"b12":0.11,"panto":0.41,"vitC":0.8,"ca":120.0,"mg":10.0,"p":92.0,"k":160.0,"fe":0.0,"zn":0.4,"jod":8.5,"na":39.0,"se":3.7,"cu":0.025,"mn":0.004,"om3":0.0,"eaa":1.45,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Parmesan","g":"Milchprodukte & Käse","p":36.0,"f":25.6,"c":0.0,"b":0.0,"m":{"vitA":288.0,"vitD":0.2,"vitE":0.78,"b1":0.02,"b2":0.11,"niacin":0.2,"b6":0.1,"folat":20.0,"b12":2.0,"panto":1.2,"vitC":0.0,"ca":1340.0,"mg":44.0,"p":800.0,"k":100.0,"fe":0.7,"zn":4.0,"jod":40.0,"na":450.0,"se":22.5,"cu":0.032,"mn":0.02,"om3":0.0,"eaa":17.17,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Quark, nature, halbfett","g":"Milchprodukte & Käse","p":9.6,"f":5.0,"c":4.0,"b":0.0,"m":{"vitA":52.0,"vitD":0.1,"vitE":0.13,"b1":0.01,"b2":0.18,"niacin":0.3,"b6":0.04,"folat":18.0,"b12":0.38,"panto":0.16,"vitC":0.2,"ca":100.0,"mg":9.3,"p":140.0,"k":130.0,"fe":0.0,"zn":0.4,"jod":21.0,"na":32.0,"se":11.9,"cu":0.033,"mn":0.015,"om3":1.0,"eaa":4.9,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Quark, nature, mager","g":"Milchprodukte & Käse","p":10.8,"f":0.2,"c":4.2,"b":0.0,"m":{"vitA":3.0,"vitD":0.0,"vitE":0.0,"b1":0.01,"b2":0.18,"niacin":0.31,"b6":0.04,"folat":19.0,"b12":0.38,"panto":0.16,"vitC":0.1,"ca":110.0,"mg":9.9,"p":150.0,"k":140.0,"fe":0.0,"zn":0.5,"jod":27.0,"na":33.0,"se":9.4,"cu":0.03,"mn":0.022,"om3":0.0,"eaa":4.84,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Raclettekäse","g":"Milchprodukte & Käse","p":26.4,"f":27.9,"c":0.0,"b":0.0,"m":{"vitA":264.0,"vitD":0.2,"vitE":0.68,"b1":0.01,"b2":0.22,"niacin":0.2,"b6":0.06,"folat":49.0,"b12":1.4,"panto":0.29,"vitC":0.0,"ca":670.0,"mg":27.0,"p":490.0,"k":70.0,"fe":0.1,"zn":3.9,"jod":11.0,"na":730.0,"se":30.0,"cu":0.047,"mn":0.026,"om3":9.0,"eaa":14.17,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Sbrinz","g":"Milchprodukte & Käse","p":28.6,"f":33.2,"c":0.0,"b":0.0,"m":{"vitA":377.0,"vitD":1.1,"vitE":0.35,"b1":0.01,"b2":0.3,"niacin":0.2,"b6":0.1,"folat":8.0,"b12":3.2,"panto":0.4,"vitC":0.0,"ca":1030.0,"mg":38.0,"p":660.0,"k":96.0,"fe":0.3,"zn":4.3,"jod":40.0,"na":710.0,"se":22.5,"cu":0.032,"mn":0.02,"om3":0.0,"eaa":17.17,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Schafmilch, roh","g":"Milchprodukte & Käse","p":5.6,"f":7.1,"c":4.7,"b":0.0,"m":{"vitA":108.0,"vitD":0.0,"vitE":0.25,"b1":0.08,"b2":0.31,"niacin":0.45,"b6":0.03,"folat":10.0,"b12":0.3,"panto":0.35,"vitC":4.2,"ca":180.0,"mg":18.0,"p":140.0,"k":120.0,"fe":0.0,"zn":0.5,"jod":10.0,"na":46.0,"se":1.7,"cu":0.046,"mn":0.018,"eaa":2.84,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Teilentrahmte Milch, pasteurisiert","g":"Milchprodukte & Käse","p":3.2,"f":2.8,"c":4.7,"b":0.0,"m":{"vitA":33.0,"vitD":0.1,"vitE":0.07,"b1":0.02,"b2":0.15,"niacin":0.09,"b6":0.02,"folat":5.0,"b12":0.08,"panto":0.37,"vitC":0.7,"ca":120.0,"mg":10.0,"p":90.0,"k":160.0,"fe":0.0,"zn":0.4,"jod":6.3,"na":39.0,"se":2.5,"cu":0.006,"mn":0.014,"om3":0.0,"eaa":1.52,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Tilsiter, pasteurisiert, vollfett","g":"Milchprodukte & Käse","p":24.6,"f":28.0,"c":0.0,"b":0.0,"m":{"vitA":287.0,"vitD":0.5,"vitE":0.76,"b1":0.05,"b2":0.35,"niacin":0.21,"b6":0.06,"folat":30.0,"b12":2.0,"panto":0.5,"vitC":0.0,"ca":840.0,"mg":29.0,"p":510.0,"k":60.0,"fe":0.1,"zn":3.7,"jod":7.2,"na":550.0,"se":14.5,"cu":0.031,"mn":0.008,"om3":0.0,"eaa":10.88,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Tomme","g":"Milchprodukte & Käse","p":20.7,"f":22.5,"c":0.0,"b":0.0,"m":{"vitA":183.0,"vitD":0.2,"vitE":0.59,"b1":0.01,"b2":0.4,"niacin":0.12,"b6":0.18,"folat":24.0,"b12":1.8,"panto":0.36,"vitC":0.0,"ca":290.0,"mg":18.0,"p":230.0,"k":76.0,"fe":0.1,"zn":1.9,"jod":0.0,"na":720.0,"se":14.5,"cu":0.019,"mn":0.034,"om3":0.0,"eaa":9.67,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Tête de Moine","g":"Milchprodukte & Käse","p":24.7,"f":35.5,"c":0.0,"b":0.0,"m":{"vitA":486.0,"vitD":0.7,"vitE":0.59,"b1":0.01,"b2":0.27,"niacin":0.08,"b6":0.27,"folat":24.0,"b12":1.6,"panto":0.32,"vitC":0.0,"ca":700.0,"mg":27.0,"p":510.0,"k":84.0,"fe":0.1,"zn":3.9,"jod":28.0,"na":930.0,"se":14.5,"cu":0.032,"mn":0.017,"om3":0.0,"eaa":14.86,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Vollmilch, pasteurisiert","g":"Milchprodukte & Käse","p":3.3,"f":4.0,"c":4.7,"b":0.0,"m":{"vitA":48.0,"vitD":0.1,"vitE":0.11,"b1":0.02,"b2":0.15,"niacin":0.1,"b6":0.03,"folat":5.0,"b12":0.12,"panto":0.44,"vitC":1.0,"ca":120.0,"mg":10.0,"p":92.0,"k":160.0,"fe":0.0,"zn":0.4,"jod":10.0,"na":39.0,"se":3.7,"cu":0.025,"mn":0.004,"om3":0.0,"eaa":1.45,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Weichkäse (Durchschnitt)","g":"Milchprodukte & Käse","p":19.3,"f":27.4,"c":0.0,"b":0.0,"m":{"vitA":221.0,"vitD":0.4,"vitE":0.64,"b1":0.02,"b2":0.31,"niacin":0.72,"b6":0.14,"folat":53.0,"b12":1.5,"panto":0.7,"vitC":0.0,"ca":440.0,"mg":20.0,"p":310.0,"k":100.0,"fe":0.2,"zn":2.2,"jod":17.0,"na":880.0,"se":14.5,"cu":0.019,"mn":0.034,"om3":0.0,"eaa":9.67,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Ziegenmilch","g":"Milchprodukte & Käse","p":2.8,"f":3.2,"c":4.2,"b":0.0,"m":{"vitA":55.0,"vitD":0.3,"vitE":0.08,"b1":0.02,"b2":0.13,"niacin":0.3,"b6":0.03,"folat":1.0,"b12":0.05,"panto":0.31,"vitC":1.5,"ca":120.0,"mg":10.0,"p":87.0,"k":200.0,"fe":0.0,"zn":0.3,"jod":4.6,"na":32.0,"se":1.4,"cu":0.046,"mn":0.018,"om3":0.0,"eaa":1.58,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Ziger weiss","g":"Milchprodukte & Käse","p":11.1,"f":7.2,"c":3.3,"b":0.0,"m":{"vitA":64.0,"vitD":0.0,"vitE":0.2,"b1":0.0,"b2":0.0,"niacin":0.0,"b6":0.04,"folat":0.0,"b12":0.0,"panto":0.0,"vitC":0.0,"ca":170.0,"mg":11.0,"p":130.0,"k":120.0,"fe":0.2,"zn":0.3,"jod":0.0,"na":33.0,"se":16.7,"cu":0.034,"mn":0.01,"om3":0.0,"eaa":5.84,"bor":0.02,"mol":5,"chr":1,"sil":0.5}},{"n":"Distelöl","g":"Öle & Fette","p":0.0,"f":89.6,"c":0.0,"b":0.0,"m":{"vitA":0.0,"vitD":0.0,"vitE":45.0,"b1":0.0,"b2":0.0,"niacin":0.0,"b6":0.0,"folat":0.0,"b12":0.0,"panto":0.0,"vitC":0.0,"ca":0.0,"mg":0.0,"p":0.0,"k":0.9,"fe":0.0,"zn":0.0,"jod":0.0,"na":0.0,"se":0.0,"cu":0.0,"om3":0.0,"eaa":0.0,"bor":0.01,"mol":0,"chr":0,"sil":0}},{"n":"Erdnussöl","g":"Öle & Fette","p":0.0,"f":89.9,"c":0.0,"b":0.0,"m":{"vitA":0.0,"vitD":0.0,"vitE":15.0,"b1":0.0,"b2":0.0,"niacin":0.0,"b6":0.0,"folat":0.0,"b12":0.0,"panto":0.0,"vitC":0.0,"ca":0.0,"mg":0.0,"p":0.0,"k":0.0,"fe":0.0,"zn":0.0,"jod":0.0,"na":0.0,"se":0.0,"cu":0.0,"om3":0.0,"eaa":0.0,"bor":0.01,"mol":0,"chr":0,"sil":0}},{"n":"Kochbutter","g":"Öle & Fette","p":0.5,"f":82.2,"c":0.7,"b":0.0,"m":{"vitA":825.0,"vitD":1.3,"vitE":1.8,"b1":0.0,"b2":0.03,"niacin":0.0,"b6":0.0,"folat":0.0,"b12":0.0,"panto":0.0,"vitC":0.0,"ca":16.0,"mg":1.4,"p":21.0,"k":20.0,"fe":0.0,"zn":0.2,"jod":0.0,"na":10.0,"se":1.0,"cu":0.0,"mn":0.0,"om3":0.0,"eaa":0.39,"bor":0.01,"mol":0,"chr":0,"sil":0}},{"n":"Maiskeimöl","g":"Öle & Fette","p":0.0,"f":89.9,"c":0.0,"b":0.0,"m":{"vitA":0.0,"vitD":0.0,"vitE":27.0,"b1":0.0,"b2":0.0,"niacin":0.0,"b6":0.0,"folat":0.0,"b12":0.0,"panto":0.0,"vitC":0.0,"ca":0.0,"mg":0.0,"p":0.0,"k":0.0,"fe":0.0,"zn":0.0,"jod":0.0,"na":0.0,"se":0.0,"cu":0.0,"om3":0.0,"eaa":0.0,"bor":0.01,"mol":0,"chr":0,"sil":0}},{"n":"Olivenöl","g":"Öle & Fette","p":0.0,"f":89.9,"c":0.0,"b":0.0,"m":{"vitA":2.0,"vitD":0.0,"vitE":4.6,"b1":0.0,"b2":0.0,"niacin":0.0,"b6":0.0,"folat":0.0,"b12":0.0,"panto":0.0,"vitC":0.0,"ca":0.9,"mg":0.0,"p":0.9,"k":0.0,"fe":0.1,"zn":0.1,"jod":0.0,"na":0.9,"se":0.0,"cu":0.0,"mn":0.0,"om3":0.0,"eaa":0.0,"bor":0.01,"mol":0,"chr":0,"sil":0}},{"n":"Rapsöl","g":"Öle & Fette","p":0.0,"f":89.9,"c":0.0,"b":0.0,"m":{"vitA":0.0,"vitD":0.0,"vitE":41.0,"b1":0.0,"b2":0.0,"niacin":0.0,"b6":0.0,"folat":0.0,"b12":0.0,"panto":0.0,"vitC":0.0,"ca":0.0,"mg":0.0,"p":0.0,"k":0.0,"fe":0.0,"zn":0.0,"jod":0.0,"na":0.0,"se":0.0,"cu":0.0,"mn":0.0,"om3":0.0,"bor":0.01,"mol":0,"chr":0,"sil":0}},{"n":"Sojaöl","g":"Öle & Fette","p":0.0,"f":89.9,"c":0.0,"b":0.0,"m":{"vitA":0.0,"vitD":0.0,"vitE":14.0,"b1":0.0,"b2":0.0,"niacin":0.0,"b6":0.0,"folat":0.0,"b12":0.0,"panto":0.0,"vitC":0.0,"ca":0.0,"mg":0.0,"p":0.0,"k":0.9,"fe":0.0,"zn":0.2,"jod":0.0,"na":0.0,"se":0.0,"cu":0.0,"mn":0.0,"om3":0.0,"eaa":0.0,"bor":0.01,"mol":0,"chr":0,"sil":0}},{"n":"Sonnenblumenöl","g":"Öle & Fette","p":0.0,"f":89.9,"c":0.0,"b":0.0,"m":{"vitA":0.0,"vitD":0.0,"vitE":36.0,"b1":0.0,"b2":0.0,"niacin":0.0,"b6":0.0,"folat":0.0,"b12":0.0,"panto":0.0,"vitC":0.0,"ca":0.9,"mg":0.9,"p":0.9,"k":0.9,"fe":0.0,"zn":0.0,"jod":0.0,"na":0.9,"se":0.0,"cu":0.0,"om3":0.0,"eaa":0.0,"bor":0.01,"mol":0,"chr":0,"sil":0}},{"n":"Traubenkernöl","g":"Öle & Fette","p":0.0,"f":89.9,"c":0.0,"b":0.0,"m":{"vitA":0.0,"vitD":0.0,"vitE":29.0,"b1":0.0,"b2":0.0,"niacin":0.0,"b6":0.0,"folat":0.0,"b12":0.0,"panto":0.0,"vitC":0.0,"ca":0.0,"mg":0.0,"p":0.0,"k":0.9,"fe":0.0,"zn":0.0,"jod":0.0,"na":0.0,"se":0.0,"om3":0.0,"eaa":0.0,"bor":0.01,"mol":0,"chr":0,"sil":0}},{"n":"Vorzugsbutter","g":"Öle & Fette","p":0.7,"f":82.3,"c":0.7,"b":0.0,"m":{"vitA":843.0,"vitD":1.3,"vitE":1.8,"b1":0.0,"b2":0.03,"niacin":0.04,"b6":0.0,"folat":0.0,"b12":0.0,"panto":0.05,"vitC":0.0,"ca":18.0,"mg":1.5,"p":22.0,"k":21.0,"fe":0.0,"zn":0.2,"jod":8.0,"na":10.0,"se":1.0,"cu":0.016,"mn":0.004,"om3":0.0,"eaa":0.39,"bor":0.01,"mol":0,"chr":0,"sil":0}},{"n":"Weizenkeimöl","g":"Öle & Fette","p":0.0,"f":89.9,"c":0.0,"b":0.0,"m":{"vitA":0.0,"vitD":0.0,"vitE":120.0,"b1":0.0,"b2":0.0,"niacin":0.0,"b6":0.0,"folat":0.0,"b12":0.0,"panto":0.0,"vitC":0.0,"ca":0.0,"mg":0.0,"p":0.0,"k":0.0,"fe":0.0,"zn":0.0,"jod":0.0,"na":0.0,"se":0.0,"cu":0.0,"om3":0.0,"eaa":0.0,"bor":0.01,"mol":0,"chr":0,"sil":0}}];
+
+/* ============================================================
+   MIKRONÄHRSTOFFE — bis zu drei Stufen je Nährstoff
+     min   [Frau, Mann]  Minimum / offizieller Referenzwert (D-A-CH, EFSA).
+                         Darunter: rot.
+     basis Basisversorgung für die Normperson 75 kg, Zahl oder [Frau, Mann].
+                         Ab hier: grün. Dazwischen: gelb.
+     skal  true = Basiswert mit dem Körpergewicht skalieren
+     plus  Zuschlag je Stunde intensivem Training, bezogen auf 75 kg.
+                         Wird immer mit dem Gewichtsfaktor skaliert.
+     erg   Basisversorgung ist über Nahrung allein nicht erreichbar
+   u     Einheit der Lebensmittel-Datenbank, zugleich Name der CSV-Spalte
+   du/df abweichende Anzeige-Einheit und Umrechnungsfaktor
+   Basiswerte und Zuschläge nach «Mikronährstoffbedarf im Sport –
+   Referenzwerte» (FIMS, 02.11.2026). Nährstoffe ohne eigenen Basiswert
+   behalten den D-A-CH-Referenzwert als einzige Stufe.
+   ============================================================ */
+const MICROS = [
+  {k:'vitD',  n:'Vitamin D',      u:'µg', du:'IE', df:40, d:0, min:[20,20], basis:100, erg:true,
+   hin:'4000 IE als Jahresmittel nach Dr. Lüscher. Über Nahrung praktisch nicht erreichbar — Sonne und Ergänzung.'},
+  {k:'om3',   n:'Omega-3 (EPA+DHA)', u:'mg', d:0, min:[250,250], basis:2000,
+   hin:'Nur die langkettigen EPA und DHA aus Fisch. Pflanzliches ALA aus Leinsamen oder Raps zählt hier nicht mit, weil der Körper es nur zu wenigen Prozent umwandelt.'},
+  {k:'vitC',  n:'Vitamin C',      u:'mg', d:0, min:[95,110], basis:400},
+  {k:'b12',   n:'Vitamin B12',    u:'µg', d:1, min:[4,4],    basis:250, erg:true,
+   hin:'Basisversorgung 250 µg über Multipräparat; aus Lebensmitteln sind etwa 5–15 µg erreichbar.'},
+  {k:'b1',    n:'Vitamin B1',     u:'mg', d:2, min:[1.0,1.2], plus:0.38},
+  {k:'vitA',  n:'Vitamin A',      u:'µg', d:0, min:[700,850]},
+  {k:'vitE',  n:'Vitamin E',      u:'mg', d:1, min:[12,14]},
+  {k:'b2',    n:'Vitamin B2',     u:'mg', d:2, min:[1.1,1.4]},
+  {k:'niacin',n:'Niacin (B3)',    u:'mg', d:1, min:[12,15]},
+  {k:'panto', n:'Pantothensäure', u:'mg', d:1, min:[6,6]},
+  {k:'b6',    n:'Vitamin B6',     u:'mg', d:2, min:[1.4,1.6]},
+  {k:'folat', n:'Folat',          u:'µg', d:0, min:[300,300]},
+  {k:'mg',    n:'Magnesium',      u:'mg', d:0, min:[300,350],   basis:700, skal:true, plus:113},
+  {k:'ca',    n:'Calcium',        u:'mg', d:0, min:[1000,1000], basis:1600, plus:75,
+   hin:'Bewusst über die Nahrung, nicht als Ergänzung.'},
+  {k:'k',     n:'Kalium',         u:'mg', d:0, min:[4000,4000], basis:5000, plus:200,
+   hin:'Der Körper hat keinen Kaliumspeicher — tägliche Zufuhr zählt.'},
+  {k:'na',    n:'Natrium',        u:'mg', d:0, min:[1500,1500], basis:1500, plus:855,
+   hin:'Nur das Natrium im Lebensmittel, ohne Salzen. Der wichtigste Einzelwert unter Belastung.'},
+  {k:'zn',    n:'Zink',           u:'mg', d:1, min:[7,11],      basis:[20,25], plus:3,
+   hin:'Sportler haben trotz höherer Zufuhr tiefere Blutwerte — Verluste über Schweiss und Urin.'},
+  {k:'fe',    n:'Eisen',          u:'mg', d:1, min:[15,10],     basis:[15,10],
+   hin:'Kein Trainingszuschlag. Nach Ferritin anpassen; im Ausdauersport über 50 µg/l.'},
+  {k:'se',    n:'Selen',          u:'µg', d:0, min:[70,70],   basis:90, skal:true,
+   hin:'1,2 µg pro kg sättigt das Transportprotein Selenoprotein P. Stark bodenabhängig — Schweizer Böden sind selenarm.'},
+  {k:'cu',    n:'Kupfer',         u:'mg', d:2, min:[1.0,1.0], basis:2.25, skal:true,
+   hin:'0,03 mg pro kg. Bei hoher Zinkzufuhr mitversorgen, die beiden konkurrieren um die Aufnahme.'},
+  {k:'mn',    n:'Mangan',         u:'mg', d:1, min:[2.0,2.0],
+   hin:'D-A-CH-Schätzwert 2–5 mg. Kein eigener Basiswert im FIMS-Referenzdokument.'},
+  {k:'bor',   n:'Bor',            u:'mg', d:2, min:[0,0],     basis:3,   schaetz:true,
+   hin:'Schätzwert. Kein offizieller Referenzwert. Werte aus publizierten Tabellen (Pizzorno, Textbook of Natural Medicine, Kap. 70); stark boden- und herkunftsabhängig.'},
+  {k:'chr',   n:'Chrom',          u:'µg', d:0, min:[30,30],   basis:100, schaetz:true,
+   hin:'Schätzwert nach Linus Pauling Institute. Minimum ist der untere D-A-CH-Schätzwert (30–100 µg).'},
+  {k:'mol',   n:'Molybdän',       u:'µg', d:0, min:[50,50],   basis:250, schaetz:true,
+   hin:'Schätzwert nach NIH Office of Dietary Supplements. Hülsenfrüchte sind mit Abstand die reichste Quelle.'},
+  {k:'sil',   n:'Silizium',       u:'mg', d:0, min:[0,0],     basis:200, schaetz:true,
+   hin:'Schätzwert nach Powell u. a. 2005 (UK-Datenbank). Kein offizieller Referenzwert; die übliche Zufuhr liegt bei 20–50 mg.'},
+  {k:'jod',   n:'Jod',            u:'µg', d:0, min:[150,150],   basis:200, plus:40},
+  {k:'p',     n:'Phosphor',       u:'mg', d:0, min:[700,700]},
+  {k:'eaa',   n:'Essenzielle Aminosäuren', u:'g', d:1, min:[13.8,13.8], skal:true,
+   hin:'Summe der neun unentbehrlichen Aminosäuren. Minimum 0,184 g pro kg nach WHO/FAO/UNU. Die 5 g im FIMS-Referenzdokument sind eine Ergänzungsmenge, kein Ziel für die Nahrung.'}
+];
+
+/* Zielwerte, die der Warenkorb nicht abbilden kann — entweder fehlen sie in der
+   Schweizer Nährwertdatenbank oder sie kommen aus Sonne und Ergänzung.
+   Gleiche Felder wie oben: basis bei 75 kg, skal, plus je Trainingsstunde. */
+const SUPP = [
+  {n:'Wasser',                  u:'l',  d:1, basis:0,    plus:0.9,  hin:'zusätzlich, je Trainingsstunde'},
+  {n:'Vitamin K2',              u:'µg', d:0, basis:225,             hin:'nur zusammen mit Vitamin D3 ab 4000 IE'}
+];
+
+const NORM_KG = 75;   // Normperson, auf die alle Tabellenwerte bezogen sind
+
+/* ============================================================
+   MAKRONÄHRSTOFFE — Zielwerte je kg Körpergewicht und Tag
+   ============================================================ */
+/* Kohlenhydrate richten sich nach dem Trainingsumfang, nicht nach der Sportart.
+   Staffel aus dem gemeinsamen Positionspapier von ACSM, Academy of Nutrition
+   and Dietetics und Dietitians of Canada (2016); wortgleich im
+   DGE-Positionspapier «Kohlenhydrate in der Sporternährung» (2019).
+   bisStd = obere Grenze der Stufe in Stunden intensivem Training pro Tag. */
+const KH_STUFEN = [
+  {bisStd:0,        n:'leicht',    kh:[3,5]},
+  {bisStd:1,        n:'moderat',   kh:[5,7]},
+  {bisStd:3,        n:'hoch',      kh:[6,10]},
+  {bisStd:Infinity, n:'sehr hoch', kh:[8,12]}
+];
+
+/* Protein richtet sich nach dem Schwerpunkt. Basisversorgung 1,6 g/kg nach
+   «Mikronährstoffbedarf im Sport» (FIMS); Bereich 1,4–2,0 g/kg aus demselben
+   Dokument, Kraftsport dort bis 3 g/kg. Minimum 0,8 g/kg nach D-A-CH. */
+const SCHWERPUNKT = [
+  {id:'freizeit', n:'Freizeit / Gesundheit',       prot:1.4, hint:'Gesundheit im Vordergrund'},
+  {id:'ausdauer', n:'Ausdauersport',               prot:1.6, hint:'Basisversorgung nach FIMS-Dokument'},
+  {id:'kraft',    n:'Kraft- und Schnellkraftsport',prot:3.0, hint:'Muskelaufbau im Vordergrund'},
+  {id:'diaet',    n:'Gewichtsklasse / Diätphase',  prot:2.0, hint:'Muskelmasse halten bei Energiedefizit'}
+];
+const PROT_MIN    = 0.8;        // g pro kg und Tag (D-A-CH)
+const FETT_PCT    = [20, 35];   // % der Gesamtenergie (ACSM 2016)
+const BALLAST_MIN = 30;         // g pro Tag (D-A-CH)
+
+/* ---------- Zustand ---------- */
+let FOODS   = FOODS_DEFAULT;
+let basket  = [];              // [{i:Index in FOODS, g:Gramm}]
+let persons = 1, days = 7, sex = 'w';
+let kg = 75, hours = 1, profileId = 'ausdauer';
+let filterGroup = 'Alle', query = '';
+
+const $  = s => document.querySelector(s);
+const el = (t, c) => { const e = document.createElement(t); if (c) e.className = c; return e; };
+
+/* ---------- Rechnen ---------- */
+const kcalOf = f => f.p*4 + f.f*9 + f.c*4 + f.b*2;
+const energyOf = f => f.f*9 + f.c*4;                       // "E" im P:E-Verhältnis
+const peOf = f => { const e = energyOf(f); return e > 0 ? (f.p*4)/e : (f.p > 0 ? Infinity : 0); };
+const angleOf = f => Math.atan2(f.p*4, energyOf(f)) * 180/Math.PI;
+
+/* Farbverlauf Rot → Bernstein → Grün über 0…90° */
+function zoneColor(deg){
+  const stops = [[0,[181,86,63]],[45,[217,164,65]],[90,[111,156,74]]];
+  if (deg <= 0) return 'rgb(181,86,63)';
+  if (deg >= 90) return 'rgb(111,156,74)';
+  const i = deg < 45 ? 0 : 1, a = stops[i], b = stops[i+1];
+  const t = (deg - a[0]) / (b[0] - a[0]);
+  return 'rgb(' + a[1].map((v,j) => Math.round(v + (b[1][j]-v)*t)).join(',') + ')';
+}
+function zoneLabel(deg){
+  if (deg >= 56.3) return 'Stark proteinbetont';     // P:E ≥ 1,5
+  if (deg >= 45)   return 'Proteinbetont';           // P:E ≥ 1,0
+  if (deg >= 35)   return 'Ausgewogen';              // P:E ≥ 0,7
+  if (deg >= 21.8) return 'Energiebetont';           // P:E ≥ 0,4
+  return 'Stark energiebetont';
+}
+const fmtPE = v => v === Infinity ? '∞' : (v >= 10 ? v.toFixed(0) : v.toFixed(2));
+const nf = (v, d=0) => v.toLocaleString('de-CH', {minimumFractionDigits:d, maximumFractionDigits:d});
+
+/* Summiert den Warenkorb und rechnet auf Person und Tag herunter */
+function totals(){
+  const t = {p:0, f:0, c:0, b:0, kcal:0, m:{}, miss:{}, grams:0};
+  MICRO_KEYS.forEach(k => { t.m[k] = 0; t.miss[k] = 0; });
+  for (const it of basket){
+    const f = FOODS[it.i]; if (!f) continue;
+    const x = it.g / 100;
+    t.p += f.p*x; t.f += f.f*x; t.c += f.c*x; t.b += f.b*x;
+    t.kcal += kcalOf(f)*x; t.grams += it.g;
+    for (const k of MICRO_KEYS){
+      if (f.m[k] === undefined) t.miss[k] += it.g;       // Datenlücke, gewichtet nach Menge
+      else t.m[k] += f.m[k]*x;
+    }
+  }
+  const div = persons * days;
+  const d = {p:t.p/div, f:t.f/div, c:t.c/div, b:t.b/div, kcal:t.kcal/div, m:{}};
+  for (const k of MICRO_KEYS) d.m[k] = t.m[k]/div;
+  return {total:t, day:d};
+}
+const MICRO_KEYS = MICROS.map(x => x.k);
+
+/* Gewichtsfaktor der Normperson: Körpergewicht ÷ 75 */
+const wf = () => kg / NORM_KG;
+
+/* Mikronährstoff-Ziel für eine Person und einen Tag:
+     Minimum        = offizieller Referenzwert, geschlechtsabhängig
+     Basisversorgung = Basiswert × Gewichtsfaktor (falls skaliert)
+                       + Zuschlag × Gewichtsfaktor × Trainingsstunden
+   Hat ein Nährstoff keinen eigenen Basiswert, ist die Basisversorgung
+   gleich dem Minimum — dann gibt es nur eine Stufe. */
+function microZiel(mi){
+  const i = sex === 'w' ? 0 : 1;
+  const min = Array.isArray(mi.min) ? mi.min[i] : mi.min;
+  let basis = mi.basis === undefined ? min
+            : (Array.isArray(mi.basis) ? mi.basis[i] : mi.basis);
+  if (mi.skal) basis *= wf();
+  if (mi.plus) basis += mi.plus * wf() * hours;
+  return {min, basis: Math.max(basis, min), eigen: mi.basis !== undefined || !!mi.plus};
+}
+/* Dasselbe für die Nährstoffe, die der Warenkorb nicht abbildet */
+function suppZiel(s){
+  let v = s.basis * (s.skal ? wf() : 1);
+  if (s.plus) v += s.plus * wf() * hours;
+  return v;
+}
+
+/* Makro-Zielwerte. Der Energiekorridor ist aus den Protein- und
+   Kohlenhydratzielen abgeleitet, unter der Annahme, dass Fett 20–35 % der
+   Energie liefert — eine Orientierung, keine eigenständige Bedarfsrechnung. */
+function targets(){
+  const sp = SCHWERPUNKT.find(x => x.id === profileId) || SCHWERPUNKT[0];
+  const st = KH_STUFEN.find(s => hours <= s.bisStd) || KH_STUFEN[KH_STUFEN.length-1];
+  const pr = [PROT_MIN*kg, sp.prot*kg];
+  const ch = [st.kh[0]*kg, st.kh[1]*kg];
+  const kcalMin = (pr[0]*4 + ch[0]*4) / (1 - FETT_PCT[0]/100);
+  const kcalMax = (pr[1]*4 + ch[1]*4) / (1 - FETT_PCT[1]/100);
+  return {
+    sp, st,
+    p: pr,
+    c: ch,
+    f: [kcalMin*FETT_PCT[0]/100/9, kcalMax*FETT_PCT[1]/100/9],
+    b: [BALLAST_MIN, Infinity],
+    kcal: [kcalMin, kcalMax]
+  };
+}
+/* 'lo' zu wenig, 'ok' im Zielbereich, 'hi' darüber */
+const status = (v, r) => v < r[0] ? 'lo' : (v > r[1] ? 'hi' : 'ok');
+
+/* ---------- Liste der Lebensmittel ---------- */
+function groups(){ return ['Alle', ...[...new Set(FOODS.map(f => f.g))]]; }
+
+function renderChips(){
+  const c = $('#chips'); c.innerHTML = '';
+  for (const g of groups()){
+    const b = el('button','chip');
+    b.textContent = g; b.setAttribute('aria-pressed', g === filterGroup);
+    b.onclick = () => { filterGroup = g; renderChips(); renderList(); };
+    c.appendChild(b);
+  }
+}
+
+function renderList(){
+  const list = $('#list'); list.innerHTML = '';
+  const q = query.trim().toLowerCase();
+  const hits = FOODS.map((f,i) => ({f,i}))
+    .filter(({f}) => (filterGroup === 'Alle' || f.g === filterGroup) &&
+                     (!q || f.n.toLowerCase().includes(q)));
+  if (!hits.length){
+    const e = el('div','empty'); e.textContent = 'Kein Lebensmittel gefunden.'; list.appendChild(e); return;
+  }
+  const frag = document.createDocumentFragment();
+  for (const {f,i} of hits){
+    const deg = angleOf(f), pe = peOf(f);
+    const r = el('div','row');
+    r.innerHTML =
+      '<div class="nm">' + esc(f.n) + '<small>' + esc(f.g) + '</small></div>' +
+      '<div class="kc">' + nf(kcalOf(f)) + ' kcal<br>' + nf(f.p,1) + ' g Prot.</div>';
+    const pill = el('span','pe');
+    pill.textContent = fmtPE(pe); pill.style.background = zoneColor(deg);
+    pill.title = 'P:E ' + fmtPE(pe) + '  ·  Winkel ' + nf(deg,1) + '°';
+    const wrapR = el('div'); wrapR.style.cssText = 'display:flex;gap:8px;align-items:center';
+    const add = el('button','add'); add.textContent = '+';
+    add.setAttribute('aria-label', 'In den Warenkorb: ' + f.n);
+    wrapR.appendChild(pill); wrapR.appendChild(add);
+    r.appendChild(wrapR);
+    r.onclick = () => addItem(i);
+    frag.appendChild(r);
+  }
+  list.appendChild(frag);
+  $('#dbCount').textContent = hits.length + ' von ' + FOODS.length + ' Lebensmitteln';
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- Warenkorb ---------- */
+function addItem(i){
+  const ex = basket.find(b => b.i === i);
+  if (ex) ex.g += 250; else basket.push({i, g:500});
+  save(); renderBasket(); renderEval();
+}
+function renderBasket(){
+  const box = $('#basket'); box.innerHTML = '';
+  if (!basket.length){
+    box.innerHTML = '<div class="empty">Noch nichts im Warenkorb.<br>' +
+      'Oben ein Lebensmittel anklicken — die P:E-Nadel schlägt sofort aus.</div>';
+    $('#basketSum').textContent = '';
+    return;
+  }
+  let tg = 0;
+  for (const it of basket){
+    const f = FOODS[it.i]; if (!f) continue;
+    tg += it.g;
+    const deg = angleOf(f);
+    const row = el('div','b-row');
+
+    const nm = el('div','nm');
+    nm.innerHTML = esc(f.n) + '<small>' + nf(kcalOf(f)*it.g/100) + ' kcal · ' +
+                   nf(f.p*it.g/100,0) + ' g Protein</small>';
+
+    const qty = el('div','qty');
+    const minus = el('button'); minus.textContent = '−'; minus.setAttribute('aria-label','weniger');
+    const inp = el('input'); inp.type='number'; inp.min='0'; inp.step='50'; inp.value = it.g;
+    inp.setAttribute('aria-label','Menge in Gramm: ' + f.n);
+    const plus = el('button'); plus.textContent = '+'; plus.setAttribute('aria-label','mehr');
+    const u = el('span','u'); u.textContent = 'g';
+    minus.onclick = () => { it.g = Math.max(0, it.g - step(it.g)); sync(); };
+    plus .onclick = () => { it.g = it.g + step(it.g); sync(); };
+    inp.oninput = () => { it.g = Math.max(0, +inp.value || 0); save(); renderEval(); updateSums(); };
+    function sync(){ inp.value = it.g; save(); renderEval(); updateSums(); nmUpdate(); }
+    function nmUpdate(){
+      nm.innerHTML = esc(f.n) + '<small>' + nf(kcalOf(f)*it.g/100) + ' kcal · ' +
+                     nf(f.p*it.g/100,0) + ' g Protein</small>';
+    }
+    qty.append(minus, inp, u, plus);
+
+    const pe = el('div','b-pe');
+    pe.innerHTML = '<span style="color:' + zoneColor(deg) + ';font-weight:700">●</span> ' + fmtPE(peOf(f));
+    pe.title = 'P:E dieses Lebensmittels';
+
+    const del = el('button','del'); del.innerHTML = '×'; del.title = 'Entfernen';
+    del.setAttribute('aria-label','Entfernen: ' + f.n);
+    del.onclick = () => { basket = basket.filter(b => b !== it); save(); renderBasket(); renderEval(); };
+
+    row.append(nm, qty, pe, del);
+    box.appendChild(row);
+  }
+  updateSums();
+  function updateSums(){
+    const g = basket.reduce((s,b) => s + b.g, 0);
+    $('#basketSum').textContent = basket.length + ' Posten · ' +
+      (g >= 1000 ? nf(g/1000, 2) + ' kg' : nf(g) + ' g');
+  }
+}
+const step = g => g >= 2000 ? 500 : g >= 500 ? 250 : 50;
+
+/* ---------- Gauge ---------- */
+const GX = 62, GY = 272, GR = 232;                 // Ursprung und Radius
+const RAYS = [0.2, 0.4, 0.7, 1.0, 1.5, 2.5, 5.0];  // Referenz-Strahlen
+const pt = (deg, r) => [GX + r*Math.cos(deg*Math.PI/180), GY - r*Math.sin(deg*Math.PI/180)];
+
+function buildGauge(){
+  let s = '<svg viewBox="0 0 330 310" role="img" aria-label="P:E-Anzeige">';
+  for (let i = 0; i < 60; i++){                    // Farbfächer aus 60 Segmenten
+    const a1 = i*1.5, a2 = (i+1)*1.5;
+    const [x1,y1] = pt(a1, GR), [x2,y2] = pt(a2, GR);
+    s += '<path d="M' + GX + ' ' + GY + ' L' + x1.toFixed(2) + ' ' + y1.toFixed(2) +
+         ' A' + GR + ' ' + GR + ' 0 0 0 ' + x2.toFixed(2) + ' ' + y2.toFixed(2) + ' Z" fill="' +
+         zoneColor((a1+a2)/2) + '" opacity=".26"/>';
+  }
+  for (const r of RAYS){                           // Strahlen mit Beschriftung
+    const d = Math.atan(r)*180/Math.PI;
+    const [xa,ya] = pt(d, 30), [xb,yb] = pt(d, GR);
+    const [xl,yl] = pt(d, GR + 16);
+    s += '<line x1="' + xa.toFixed(1) + '" y1="' + ya.toFixed(1) + '" x2="' + xb.toFixed(1) +
+         '" y2="' + yb.toFixed(1) + '" stroke="#fff" stroke-width="1.4" opacity=".85"/>' +
+         '<text x="' + xl.toFixed(1) + '" y="' + yl.toFixed(1) + '" font-size="10.5" fill="#6b6c62" ' +
+         'font-family="Poppins,sans-serif" text-anchor="' + (d > 60 ? 'middle' : 'start') +
+         '" dominant-baseline="middle">' + String(r).replace('.', ',') + '</text>';
+  }
+  s += '<text x="' + (GX-4) + '" y="18" font-size="10.5" fill="#6f9c4a" font-family="Poppins,sans-serif" font-weight="600">Fettabbau</text>' +
+       '<text x="' + (GX+GR-6) + '" y="' + (GY+30) + '" font-size="10.5" fill="#b5563f" font-family="Poppins,sans-serif" font-weight="600" text-anchor="end">Fettaufbau</text>';
+  // Achsen
+  s += '<line x1="' + GX + '" y1="' + GY + '" x2="' + GX + '" y2="26" stroke="#4b4c42" stroke-width="2"/>' +
+       '<line x1="' + GX + '" y1="' + GY + '" x2="' + (GX+GR+8) + '" y2="' + GY + '" stroke="#4b4c42" stroke-width="2"/>' +
+       '<text transform="translate(16,' + (GY-80) + ') rotate(-90)" font-size="11.5" font-weight="700" fill="#4b4c42" font-family="Poppins,sans-serif">PROTEIN</text>' +
+       '<text x="' + GX + '" y="' + (GY+22) + '" font-size="10.5" font-weight="700" fill="#4b4c42" font-family="Poppins,sans-serif">ENERGIE (Fett + verfügbare KH)</text>';
+  // Nadel
+  s += '<g id="needle" transform="rotate(0 ' + GX + ' ' + GY + ')">' +
+         '<line x1="' + (GX+6) + '" y1="' + GY + '" x2="' + (GX+GR-20) + '" y2="' + GY +
+         '" stroke="#2f3029" stroke-width="3.5" stroke-linecap="round"/>' +
+         '<polygon points="' + (GX+GR-26) + ',' + (GY-8) + ' ' + (GX+GR-2) + ',' + GY + ' ' +
+                               (GX+GR-26) + ',' + (GY+8) + '" fill="#2f3029"/>' +
+       '</g>' +
+       '<circle cx="' + GX + '" cy="' + GY + '" r="6" fill="#2f3029"/></svg>';
+  $('#gauge').innerHTML = s;
+}
+
+/* ---------- Auswertung ---------- */
+function renderEval(){
+  const {total, day} = totals();
+  const any = basket.length > 0 && total.grams > 0;
+
+  // Nadel + grosse Zahl
+  const agg = {p:total.p, f:total.f, c:total.c, b:total.b};
+  const deg = any ? angleOf(agg) : 0;
+  const pe  = any ? peOf(agg) : null;
+  const needle = $('#needle');
+  if (needle) needle.setAttribute('transform', 'rotate(' + (-deg).toFixed(2) + ' ' + GX + ' ' + GY + ')');
+  $('#peVal').textContent = any ? fmtPE(pe) : '–';
+  $('#peVal').style.color = any ? zoneColor(deg) : 'var(--olive-m)';
+  const z = $('#peZone');
+  z.textContent = any ? zoneLabel(deg) : 'Noch nichts gewählt';
+  z.style.background = any ? zoneColor(deg) : 'var(--olive-m)';
+  $('#peAng').textContent = any ? 'Vektorwinkel ' + nf(deg,1) + '°' : 'Vektorwinkel –';
+
+  const scope = 'pro Person und Tag';
+  $('#macroScope').textContent = scope;
+  $('#microScope').textContent = scope;
+  $('#scopeMsg').textContent = persons + ' ' + (persons === 1 ? 'Person' : 'Personen') + ' · ' +
+    days + ' Tage = ' + (persons*days) + ' Personentage. Alle Werte unten gelten ' + scope + '.';
+
+  // Zielwerte aus Leistungsprofil und Körpergewicht
+  const t = targets();
+
+  // Kennzahlen
+  $('#kpis').innerHTML = [
+    ['Kalorien',   nf(day.kcal), 'kcal', 'Ziel ' + nf(t.kcal[0]) + '–' + nf(t.kcal[1])],
+    ['Protein',    nf(day.p,1),  'g',    any ? nf(day.p/kg,2) + ' g/kg' : '–'],
+    ['Kohlenhydrate', nf(day.c,1), 'g',  any ? nf(day.c/kg,2) + ' g/kg' : '–'],
+    ['Einkauf gesamt', total.grams >= 1000 ? nf(total.grams/1000,2) : nf(total.grams),
+                       total.grams >= 1000 ? 'kg' : 'g', nf(persons*days) + ' Personentage']
+  ].map(([l,v,u,sub]) =>
+    '<div class="kpi"><div class="v">' + v + ' <span>' + u + '</span></div>' +
+    '<div class="l">' + l + '</div><div class="l" style="color:var(--olive-m)">' + sub + '</div></div>'
+  ).join('');
+
+  // Makro-Balken. 'stufe' = Minimum/Basisversorgung wie bei den Mikronährstoffen,
+  // 'bereich' = Zielkorridor, in dem der Wert liegen soll.
+  const kP = day.p*4, kF = day.f*9, kC = day.c*4, kB = day.b*2;
+  const sum = kP + kF + kC + kB || 1;
+  $('#macro').innerHTML = [
+    ['Protein',       day.p, kP, '#577d39', t.p, 'stufe'],
+    ['Verfügbare KH', day.c, kC, '#b5563f', t.c, 'bereich'],
+    ['Fett',          day.f, kF, '#d9a441', t.f, 'bereich'],
+    ['Ballaststoffe', day.b, kB, '#9b9c90', [BALLAST_MIN, BALLAST_MIN], 'stufe']
+  ].map(([n, g, k, col, rng, mode]) => {
+    const [lo, hi] = rng;
+    let scale, bandL, bandW, st, ziel;
+    if (mode === 'stufe'){
+      scale = hi * 1.25 || 1;
+      bandL = Math.min(100, hi/scale*100); bandW = 100 - bandL;
+      st = !any ? null : g < lo ? 'lo' : g < hi ? 'mid' : 'ok';
+      ziel = lo === hi ? 'ab ' + nf(hi) + ' g' : 'Min. ' + nf(lo) + ' · Basis ' + nf(hi) + ' g';
+    } else {
+      scale = Math.max(g, hi) * 1.22 || 1;
+      bandL = Math.min(100, lo/scale*100);
+      bandW = Math.min(100 - bandL, (Math.min(hi, scale) - lo)/scale*100);
+      st = any ? status(g, rng) : null;
+      ziel = 'Ziel ' + nf(lo) + '–' + nf(hi) + ' g';
+    }
+    const label = {lo:'zu wenig', mid:'über Minimum', ok:'im Ziel', hi:'darüber'}[st] || '–';
+    const cls = st === 'mid' ? 'st-lo' : st ? 'st-' + st : '';
+    return '<div class="m">' +
+      '<div class="nm"><b>' + n + '</b><small>' + nf(g,1) + ' g · ' +
+        (any ? nf(k/sum*100,0) + ' % der kcal' : '–') + '</small></div>' +
+      '<div class="tbar">' +
+        '<div class="band" style="left:' + bandL.toFixed(1) + '%;width:' + Math.max(0,bandW).toFixed(1) + '%"></div>' +
+        '<i style="width:' + (any ? Math.min(100, g/scale*100).toFixed(1) : 0) + '%;background:' + col + '"></i>' +
+      '</div>' +
+      '<div class="goal ' + cls + '"><b>' + label + '</b>' + ziel + '</div></div>';
+  }).join('');
+
+  // Mikronährstoffe: Balken bis zur Basisversorgung, Strich beim Minimum
+  $('#micros').innerHTML = MICROS.map(mi => {
+    const z = microZiel(mi);
+    const f = mi.df || 1, u = mi.du || mi.u;
+    const val = day.m[mi.k];
+    const pct = z.basis > 0 ? val/z.basis*100 : 0;
+    const col = !any ? 'var(--olive-m)'
+              : val < z.min   ? 'var(--red)'
+              : val < z.basis ? 'var(--amber)' : 'var(--green)';
+    const gap = total.miss[mi.k];
+    const flag = gap > 0
+      ? ' <span class="warn" title="Für ' + nf(gap) + ' g im Warenkorb liegt kein Wert für ' +
+        esc(mi.n) + ' vor — der angezeigte Wert ist eher zu tief.">!</span>' : '';
+    const info = mi.hin ? ' <span class="info" title="' + esc(mi.hin) + '">i</span>' : '';
+    const mark = z.eigen && z.basis > z.min && z.min > 0
+      ? '<span class="minmark" style="left:' + (z.min/z.basis*100).toFixed(1) + '%" title="Minimum ' +
+        nf(z.min*f, mi.d) + ' ' + u + '"></span>' : '';
+    const ca = mi.schaetz ? '≈ ' : '';
+    return '<div class="mi"><div class="hd"><b>' + esc(mi.n) + flag + info + '</b>' +
+      '<span class="q">' + ca + (any ? nf(val*f, mi.d) : '–') + ' / ' + nf(z.basis*f, mi.d) + ' ' + u +
+      '  ·  ' + (any ? nf(pct,0) + ' %' : '–') + '</span></div>' +
+      '<div class="mbar">' + mark +
+      '<i style="width:' + (any ? Math.min(100, pct).toFixed(1) : 0) + '%;background:' + col + '"></i>' +
+      '</div></div>';
+  }).join('');
+
+  // Zielwerte ohne Bezug zum Warenkorb
+  $('#supp').innerHTML = SUPP.map(s =>
+    '<div class="mi"><div class="hd"><b>' + esc(s.n) + '</b>' +
+    '<span class="q" style="color:var(--olive);font-weight:600">' +
+      nf(suppZiel(s), s.d) + ' ' + s.u + '</span></div>' +
+    (s.hin ? '<div style="font-size:11.5px;color:var(--ink-m)">' + esc(s.hin) + '</div>' : '') +
+    '</div>').join('');
+}
+
+/* ---------- Einstellungs-Segmente ---------- */
+function buildSegs(){
+  const p = $('#segPers'); p.innerHTML = '';
+  for (let i = 1; i <= 5; i++){
+    const b = el('button'); b.textContent = i; b.setAttribute('aria-pressed', i === persons);
+    b.setAttribute('aria-label', i + ' ' + (i === 1 ? 'Person' : 'Personen'));
+    b.onclick = () => { persons = i; save(); buildSegs(); renderEval(); };
+    p.appendChild(b);
+  }
+  const d = $('#segDays'); d.innerHTML = '';
+  for (const n of [3, 5, 7, 14]){
+    const b = el('button'); b.textContent = n + ' T'; b.setAttribute('aria-pressed', n === days);
+    b.setAttribute('aria-label', n + ' Tage');
+    b.onclick = () => { days = n; save(); buildSegs(); renderEval(); };
+    d.appendChild(b);
+  }
+  for (const b of $('#segSex').children)
+    b.setAttribute('aria-pressed', b.dataset.v === sex);
+  renderProfile();
+}
+
+/* Schwerpunkt-Auswahl und erläuternder Hinweis darunter */
+function renderProfile(){
+  const sel = $('#profile');
+  if (!sel.options.length)
+    sel.innerHTML = SCHWERPUNKT.map(p =>
+      '<option value="' + p.id + '">' + esc(p.n) + '</option>').join('');
+  sel.value = profileId;
+  // Felder nicht überschreiben, solange jemand darin tippt
+  if (document.activeElement !== $('#kg'))    $('#kg').value = kg;
+  if (document.activeElement !== $('#hours')) $('#hours').value = hours;
+  const t = targets();
+  $('#profNote').innerHTML =
+    '<b>' + esc(t.sp.n) + '</b> — ' + esc(t.sp.hint) + '. ' +
+    nf(kg) + ' kg, ' + nf(hours,1).replace('.0','') + ' Std. intensives Training pro Tag ' +
+    '(Umfang «' + t.st.n + '»), Gewichtsfaktor ' + nf(kg/NORM_KG, 2) + '.<br>' +
+    'Daraus pro Person und Tag: <b>' + nf(t.p[1]) + ' g Protein</b> (' + nf(t.sp.prot,1) +
+    ' g/kg, Minimum ' + nf(t.p[0]) + ' g) und <b>' + nf(t.c[0]) + '–' + nf(t.c[1]) +
+    ' g Kohlenhydrate</b> (' + nf(t.st.kh[0],1) + '–' + nf(t.st.kh[1],1) + ' g/kg), ' +
+    'Fett ' + FETT_PCT[0] + '–' + FETT_PCT[1] + ' % der Energie.' +
+    '<span class="src">Kohlenhydrate nach Trainingsumfang (ACSM / Academy of Nutrition and ' +
+    'Dietetics / Dietitians of Canada 2016, DGE 2019). Protein und Mikronährstoffe nach ' +
+    '«Mikronährstoffbedarf im Sport – Referenzwerte» (FIMS). Alles gilt je Person.</span>';
+}
+
+/* ---------- Speichern im Browser ---------- */
+const KEY = 'fims-pe-planer-v1';
+function save(){
+  try { localStorage.setItem(KEY,
+    JSON.stringify({basket, persons, days, sex, kg, hours, profileId})); } catch(e){}
+}
+function load(){
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (!s) return;
+    if (Array.isArray(s.basket)) basket = s.basket.filter(b => FOODS[b.i]);
+    if (s.persons >= 1 && s.persons <= 5) persons = s.persons;
+    if ([3,5,7,14].includes(s.days)) days = s.days;
+    if (s.sex === 'm' || s.sex === 'w') sex = s.sex;
+    if (s.kg >= 30 && s.kg <= 200) kg = s.kg;
+    if (s.hours >= 0 && s.hours <= 8) hours = s.hours;
+    if (SCHWERPUNKT.some(p => p.id === s.profileId)) profileId = s.profileId;
+  } catch(e){}
+}
+
+/* ---------- CSV ---------- */
+const CSV_COLS = ['Name','Gruppe','Protein_g','Fett_g','KH_verfuegbar_g','Ballaststoffe_g',
+                  ...MICROS.map(m => m.k + '_' + m.u.replace('µ','u'))];
+
+function toCSV(rows){ return rows.map(r => r.map(c => {
+  const s = c === null || c === undefined ? '' : String(c);
+  return /[";\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+}).join(';')).join('\r\n'); }
+
+/* Speichern funktioniert in zwei Umgebungen: als normale Datei (lokal, LearnWorlds)
+   und über die Download-Freigabe, wenn die Seite in der Claude-Vorschau läuft. */
+let dlCap = null, dlAsked = false;
+async function downloadCap(){
+  if (dlAsked) return dlCap;
+  dlAsked = true;
+  try {
+    if (window.claude && typeof window.claude.use === 'function')
+      dlCap = await window.claude.use('downloads');
+  } catch(e){ dlCap = null; }
+  return dlCap;
+}
+async function download(name, text){
+  const blob = new Blob(['﻿' + text], {type:'text/csv;charset=utf-8'});
+  const cap = await downloadCap();
+  if (cap){
+    try { await cap.save({filename:name, data:blob}); return; }
+    catch(err){ if (err && err.code === 'declined') return; }   // sonst normaler Weg
+  }
+  const a = el('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+function downloadTemplate(){
+  const rows = [CSV_COLS];
+  for (const f of FOODS)
+    rows.push([f.n, f.g, f.p, f.f, f.c, f.b, ...MICROS.map(m => f.m[m.k] ?? '')]);
+  download('FIMS-Lebensmittel-Vorlage.csv', toCSV(rows));
+}
+
+function exportBasket(){
+  const {total, day} = totals();
+  const t = targets();
+  const rows = [['Einkaufsliste – FIMS P:E Einkaufsplaner'],
+                ['Personen', persons], ['Tage', days],
+                ['Schwerpunkt', t.sp.n], ['Körpergewicht_kg', kg],
+                ['Geschlecht', sex === 'w' ? 'Frau' : 'Mann'],
+                ['Training_Std_pro_Tag', hours], ['Trainingsumfang', t.st.n],
+                ['Ziel_Protein_g_pro_Tag', Math.round(t.p[0]) + '–' + Math.round(t.p[1])],
+                ['Ziel_Kohlenhydrate_g_pro_Tag', Math.round(t.c[0]) + '–' + Math.round(t.c[1])],
+                ['Ziel_Fett_g_pro_Tag', Math.round(t.f[0]) + '–' + Math.round(t.f[1])], [],
+                ['Lebensmittel','Gruppe','Menge_g','kcal','Protein_g','Fett_g','KH_verf_g','Ballaststoffe_g','PE']];
+  for (const it of basket){
+    const f = FOODS[it.i]; if (!f) continue;
+    const x = it.g/100;
+    rows.push([f.n, f.g, it.g, Math.round(kcalOf(f)*x), (f.p*x).toFixed(1),
+               (f.f*x).toFixed(1), (f.c*x).toFixed(1), (f.b*x).toFixed(1), fmtPE(peOf(f))]);
+  }
+  const agg = {p:total.p, f:total.f, c:total.c, b:total.b};
+  rows.push([], ['Pro Person und Tag'],
+            ['Kalorien_kcal', Math.round(day.kcal)],
+            ['Protein_g', day.p.toFixed(1)], ['Fett_g', day.f.toFixed(1)],
+            ['KH_verfuegbar_g', day.c.toFixed(1)], ['Ballaststoffe_g', day.b.toFixed(1)],
+            ['PE_Ratio', basket.length ? fmtPE(peOf(agg)) : ''],
+            ['Vektorwinkel_Grad', basket.length ? angleOf(agg).toFixed(1) : ''],
+            [], ['Mikronährstoff','pro Person und Tag','Einheit','Minimum','Basisversorgung',
+                 'Prozent der Basisversorgung']);
+  for (const mi of MICROS){
+    const z = microZiel(mi), f = mi.df || 1;
+    rows.push([mi.n, (day.m[mi.k]*f).toFixed(mi.d), mi.du || mi.u,
+               (z.min*f).toFixed(mi.d), (z.basis*f).toFixed(mi.d),
+               Math.round(day.m[mi.k]/z.basis*100)]);
+  }
+  rows.push([], ['Nicht über den Warenkorb','Zielwert pro Person und Tag','Einheit']);
+  for (const s of SUPP) rows.push([s.n, suppZiel(s).toFixed(s.d), s.u]);
+  download('FIMS-Einkaufsliste.csv', toCSV(rows));
+}
+
+/* CSV einlesen – akzeptiert ; oder , als Trennzeichen */
+function parseCSV(text){
+  text = text.replace(/^﻿/, '');
+  const sep = (text.split('\n')[0].match(/;/g) || []).length >=
+              (text.split('\n')[0].match(/,/g) || []).length ? ';' : ',';
+  const rows = []; let row = [], cell = '', inQ = false;
+  for (let i = 0; i < text.length; i++){
+    const ch = text[i];
+    if (inQ){
+      if (ch === '"'){ if (text[i+1] === '"'){ cell += '"'; i++; } else inQ = false; }
+      else cell += ch;
+    } else if (ch === '"') inQ = true;
+    else if (ch === sep){ row.push(cell); cell = ''; }
+    else if (ch === '\n'){ row.push(cell); rows.push(row); row = []; cell = ''; }
+    else if (ch !== '\r') cell += ch;
+  }
+  if (cell !== '' || row.length){ row.push(cell); rows.push(row); }
+  return rows.filter(r => r.some(c => c.trim() !== ''));
+}
+
+function importCSV(text){
+  const rows = parseCSV(text);
+  if (rows.length < 2) throw new Error('Die Datei enthält keine Datenzeilen.');
+  const head = rows[0].map(h => h.trim().toLowerCase());
+  const idx = n => head.findIndex(h => h === n.toLowerCase());
+  const iN = idx('Name'), iG = idx('Gruppe'), iP = idx('Protein_g'),
+        iF = idx('Fett_g'), iC = idx('KH_verfuegbar_g'), iB = idx('Ballaststoffe_g');
+  if ([iN,iP,iF,iC].some(i => i < 0))
+    throw new Error('Es fehlen Pflichtspalten. Nötig sind mindestens: Name, Protein_g, Fett_g, KH_verfuegbar_g.');
+  const mIdx = MICROS.map(m => idx(m.k + '_' + m.u.replace('µ','u')));
+  const num = s => { const v = parseFloat(String(s).replace(',','.').trim()); return isFinite(v) ? v : null; };
+  const out = [];
+  for (const r of rows.slice(1)){
+    const name = (r[iN] || '').trim(); if (!name) continue;
+    const p = num(r[iP]), f = num(r[iF]), c = num(r[iC]);
+    if (p === null || f === null || c === null) continue;
+    const m = {};
+    MICROS.forEach((mi,j) => { if (mIdx[j] >= 0){ const v = num(r[mIdx[j]]); if (v !== null) m[mi.k] = v; } });
+    out.push({n:name, g:(iG >= 0 && (r[iG]||'').trim()) || 'Eigene Lebensmittel',
+              p, f, c, b:(iB >= 0 ? num(r[iB]) : 0) || 0, m});
+  }
+  if (!out.length) throw new Error('Keine gültige Zeile gefunden — bitte Zahlenspalten prüfen.');
+  return out;
+}
+
+function msg(text, ok){
+  const d = $('#importMsg');
+  d.className = 'srmsg';
+  d.style.color = ok ? 'var(--green-d)' : 'var(--red)';
+  d.textContent = text;
+}
+
+/* ---------- Start ---------- */
+function boot(){
+  buildGauge(); buildSegs(); renderChips(); renderList(); renderBasket(); renderEval();
+}
+
+$('#q').oninput = e => { query = e.target.value; renderList(); };
+for (const b of $('#segSex').children)
+  b.onclick = () => { sex = b.dataset.v; save(); buildSegs(); renderEval(); };
+$('#profile').onchange = e => { profileId = e.target.value; save(); renderProfile(); renderEval(); };
+$('#kg').oninput = e => {
+  const v = parseFloat(e.target.value);
+  if (!isFinite(v) || v < 30 || v > 200) return;     // ungültige Zwischenstände ignorieren
+  kg = v; save(); renderProfile(); renderEval();
+};
+$('#hours').oninput = e => {
+  const v = parseFloat(e.target.value);
+  if (!isFinite(v) || v < 0 || v > 8) return;
+  hours = v; save(); renderProfile(); renderEval();
+};
+$('#clearBtn').onclick = () => {
+  if (basket.length && !confirm('Warenkorb wirklich leeren?')) return;
+  basket = []; save(); renderBasket(); renderEval();
+};
+$('#printBtn').onclick = () => window.print();
+$('#csvBtn').onclick = () => basket.length ? exportBasket() : alert('Der Warenkorb ist noch leer.');
+$('#tplBtn').onclick = downloadTemplate;
+$('#csvIn').onchange = e => {
+  const file = e.target.files[0]; if (!file) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const foods = importCSV(rd.result);
+      FOODS = foods; basket = []; filterGroup = 'Alle'; query = ''; $('#q').value = '';
+      $('#resetDbBtn').classList.remove('hidden');
+      msg(foods.length + ' Lebensmittel geladen. Der Warenkorb wurde geleert.', true);
+      renderChips(); renderList(); renderBasket(); renderEval(); save();
+    } catch(err){ msg('Import fehlgeschlagen: ' + err.message, false); }
+  };
+  rd.onerror = () => msg('Die Datei konnte nicht gelesen werden.', false);
+  rd.readAsText(file, 'utf-8');
+  e.target.value = '';
+};
+$('#resetDbBtn').onclick = () => {
+  FOODS = FOODS_DEFAULT; basket = []; filterGroup = 'Alle'; query = ''; $('#q').value = '';
+  $('#resetDbBtn').classList.add('hidden'); msg('Standard-Datenbank wiederhergestellt.', true);
+  renderChips(); renderList(); renderBasket(); renderEval(); save();
+};
+
+load();
+boot();
+</script>
+</body>
+</html>
